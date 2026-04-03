@@ -1,17 +1,20 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Home from './pages/Home';
-import AddJob from './pages/AddJob';
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Home from "./pages/Home";
+import AddJob from "./pages/AddJob";
+import Login from "./pages/Login"; // Нэмсэн
+import Register from "./pages/Register"; // Нэмсэн
 
 function App() {
   return (
     <Router>
       <Routes>
-        {/* Нүүр хуудас (http://localhost:5173/) */}
-        <Route path="/" element={<Home />} />
-        
-        {/* Зар нэмэх хуудас (http://localhost:5173/add-job) */}
-        <Route path="/add-job" element={<AddJob />} />
+        <Route path='/' element={<Home />} />
+        <Route path='/add-job' element={<AddJob />} />
+
+        {/* Шинээр нэмэгдсэн замууд */}
+        <Route path='/login' element={<Login />} />
+        <Route path='/register' element={<Register />} />
       </Routes>
     </Router>
   );
