@@ -73,7 +73,7 @@ const WorkFlow = () => {
       {/* Арын зөөлөн туяа (Glow effect) */}
       <div className="absolute top-0 left-1/2 w-full -translate-x-1/2 h-full bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-100/40 via-transparent to-transparent pointer-events-none"></div>
 
-      <div className="container mx-auto px-6 relative z-10">
+      <div className="w-full px-8 md:px-16 lg:px-24 relative z-10">
         <div className="text-center max-w-3xl mx-auto mb-16">
           <h4 className="text-blue-600 font-bold tracking-widest text-sm uppercase mb-3">Ажлын урсгал</h4>
           <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-6 tracking-tight">Хэрхэн ажилладаг вэ?</h2>
