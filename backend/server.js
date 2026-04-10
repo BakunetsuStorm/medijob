@@ -1,11 +1,11 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-require('dotenv').config(); // .env доторх нууц үгийг унших сан
+require('dotenv').config();
 
 const app = express();
 
-// Миддлевар тохиргоо (Frontend-ээс дата хүлээж авахын тулд)
+// Миддлевар тохиргоо 
 app.use(express.json());
 app.use(cors());
 
@@ -19,16 +19,13 @@ app.get('/', (req, res) => {
   res.send('MediJob Backend хэвийн ажиллаж байна...');
 });
 
-// Серверийг асаах
+// Үндсэн API замууд (БҮХ ЗАМУУД ЭНД БАЙХ ЁСТОЙ)
+app.use('/api/jobs', require('./routes/jobRoutes'));
+app.use('/api/auth', require('./routes/authRoutes'));
+app.use('/api/applications', require('./routes/applicationRoutes')); 
+
+// Серверийг асаах (ХАМГИЙН ТӨГСГӨЛД БАЙХ ЁСТОЙ)
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Сервер ${PORT} порт дээр ажиллаж эхэллээ`);
 });
-
-// Тестийн API
-app.get('/', (req, res) => {
-  res.send('MediJob Backend хэвийн ажиллаж байна...');
-});
-
-// Үндсэн API замууд (ҮҮНИЙГ НЭМНЭ)
-app.use('/api/jobs', require('./routes/jobRoutes'));

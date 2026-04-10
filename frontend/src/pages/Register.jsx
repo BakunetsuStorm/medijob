@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -10,14 +11,22 @@ const Register = () => {
     role: "worker", // worker эсвэл employer
   });
 
+  
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+ const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Бүртгүүлэх мэдээлэл:", formData);
-    alert("Бүртгүүлэх API холбогдоогүй байна!");
+    try {
+      // Backend рүү датагаа шидэх
+      await axios.post("http://localhost:5000/api/auth/register", formData);
+      alert("Амжилттай бүртгүүллээ! Одоо нэвтэрч орно уу.");
+      navigate("/login"); // Амжилттай болбол Login руу шиднэ
+    } catch (error) {
+      console.error("Бүртгэхэд алдаа гарлаа:", error);
+      alert(error.response?.data?.message || "Алдаа гарлаа");
+    }
   };
 
   return (
