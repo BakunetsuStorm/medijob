@@ -7,17 +7,9 @@ const jobSchema = new mongoose.Schema({
   salary: { type: Number, required: true },
   salaryType: { type: String, enum: ['цаг', 'өдөр', 'төсөл'], required: true },
   
-  // --- ШИНЭЭР НЭМЭГДСЭН ХЭСГҮҮД ---
-  locationType: { 
-    type: String, 
-    enum: ['Зайнаас', 'Оффис', 'Холимог'], 
-    default: 'Зайнаас' 
-  },
-  requirements: { 
-    type: String, 
-    required: true // Ажлын шаардлага заавал бичих ёстой
-  },
-  // ---------------------------------
+  // ЭНЭ ХОЁР МӨР БАЙХГҮЙ БАЙСНААС БОЛООД ХАДГАЛАГДАХГҮЙ БАЙСАН БАЙНА
+  locationType: { type: String, enum: ['Зайнаас', 'Оффис', 'Холимог'], default: 'Зайнаас' },
+  requirements: { type: String, required: false },
 
   rating: { type: Number, default: 0 },
   coverImage: { type: String, default: 'https://via.placeholder.com/400x200?text=Job+Image' }

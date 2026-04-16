@@ -48,21 +48,47 @@ const Home = () => {
           Medi<span className="text-blue-600">Job.</span>
         </Link>
 
+        {/* ШИНЭЧЛЭГДСЭН ЦЭСНҮҮД */}
         <div className='hidden md:flex space-x-8 font-semibold text-sm text-gray-600'>
-          <a href='#' className='text-black'>Ажил хайх</a>
-          <a href='#' className='hover:text-black transition-colors'>Мэргэжилтнүүд</a>
-          <a href='#' className='hover:text-black transition-colors'>Блог</a>
+          <button 
+            onClick={() => document.getElementById('jobs-section').scrollIntoView({ behavior: 'smooth' })} 
+            className='hover:text-black transition-colors cursor-pointer'
+          >
+            Ажил хайх
+          </button>
+          <button 
+            onClick={() => document.getElementById('workflow-section').scrollIntoView({ behavior: 'smooth' })} 
+            className='hover:text-black transition-colors cursor-pointer'
+          >
+            Хэрхэн ажилладаг вэ?
+          </button>
         </div>
 
         {/* НЭВТРЭСЭН ЭСЭХИЙГ ШАЛГАХ ХЭСЭГ */}
         <div className='flex items-center gap-4 text-sm font-bold'>
           {user ? (
             <div className="flex items-center gap-4">
-              <span className="text-gray-600 bg-gray-100 px-4 py-2 rounded-full hidden sm:inline-block">
-                Сайн уу, <span className="text-black font-black">{user.name}</span>.
-              </span>
               
-              {/* ЗӨВХӨН АЖИЛ ОЛГОГЧ: "Миний зарууд" болон "Зар оруулах" товчийг харна */}
+              {/* Профайл руу ордог нэр */}
+              <Link to="/profile" className="text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors px-4 py-2 rounded-full hidden sm:inline-block cursor-pointer">
+                Сайн уу, <span className="text-black font-black">{user.name}</span> 
+              </Link>
+              
+              {/* --- ЗӨВХӨН АЖИЛ ХАЙГЧ Л ХАРНА --- */}
+              {user.role === 'worker' && (
+                <Link to='/my-applications' className='text-blue-600 bg-blue-50 hover:bg-blue-100 font-bold px-5 py-2.5 rounded-xl transition-all'>
+                  Миний хүсэлтүүд
+                </Link>
+              )}
+
+              {/* --- ЗӨВХӨН АДМИН Л ХАРНА --- */}
+              {user.role === 'admin' && (
+                <Link to='/admin' className='bg-red-500 text-white font-bold px-5 py-2.5 rounded-xl hover:bg-red-600 transition-all flex items-center gap-2 shadow-lg shadow-red-500/20'>
+                  ⚙️ Админ Самбар
+                </Link>
+              )}
+
+              {/* ЗӨВХӨН АЖИЛ ОЛГОГЧ Л ХАРНА */}
               {user.role === 'employer' && (
                 <>
                   <Link to='/my-jobs' className='text-gray-600 hover:text-black font-bold transition-colors'>
@@ -138,7 +164,7 @@ const Home = () => {
         </div>
       </section>
 
-      <div className="bg-gray-50/50 pt-10"><WorkFlow /></div>
+      <div id="workflow-section" className="bg-gray-50/50 pt-10"><WorkFlow /></div>
 
       {/* 4. Jobs */}
       <section id="jobs-section" className='w-full px-6 md:px-12 lg:px-24 py-24 bg-gray-50'>

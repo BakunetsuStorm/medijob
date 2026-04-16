@@ -46,12 +46,18 @@ const JobDetails = () => {
         applicantName: user.name,
         applicantEmail: user.email,
         employerName: job.employerName,
-        coverLetter: coverLetter
+        coverLetter: coverLetter,
+        
+        // --- ҮҮНИЙГ АВТОМАТААР ХАВСРАХААР НЭМЛЭЭ ---
+        profession: user.profession || 'Оруулаагүй',
+        bio: user.bio || 'Оруулаагүй',
+        skills: user.skills || 'Оруулаагүй',
+        experience: user.experience || 'Оруулаагүй'
       };
 
       await axios.post('http://localhost:5000/api/applications', applicationData);
       alert("Таны хүсэлт амжилттай илгээгдлээ! Ажил олгогч тантай холбогдох болно.");
-      setIsApplying(false); // Хайрцгийг хаах
+      setIsApplying(false); 
     } catch (error) {
       console.error(error);
       alert("Хүсэлт илгээхэд алдаа гарлаа.");

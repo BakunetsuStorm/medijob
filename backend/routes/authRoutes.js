@@ -1,12 +1,11 @@
 const express = require('express');
 const router = express.Router();
-// .default гэдгийг нь хасаж, доорх байдлаар зөв импортлоно
-const { registerUser, loginUser } = require('../controllers/authController');
+// updateProfile нэмэгдсэн
+const { registerUser, loginUser, getAllUsers, updateProfile } = require('../controllers/authController'); 
 
-// http://localhost:5000/api/auth/register
 router.post('/register', registerUser);
-
-// http://localhost:5000/api/auth/login
 router.post('/login', loginUser);
+router.get('/users', getAllUsers);
+router.put('/profile/:id', updateProfile); // ЭНЭ МӨРИЙГ ШИНЭЭР НЭМЛЭЭ
 
 module.exports = router;

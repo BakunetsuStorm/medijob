@@ -8,7 +8,6 @@ const MyJobs = () => {
   const [myJobs, setMyJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   
-  // Хүсэлтүүдийг харах төлөв
   const [activeJobId, setActiveJobId] = useState(null);
   const [applications, setApplications] = useState([]);
 
@@ -40,7 +39,7 @@ const MyJobs = () => {
 
   const fetchApplications = async (jobId) => {
     if (activeJobId === jobId) {
-      setActiveJobId(null); // Дахиад дарвал хаана
+      setActiveJobId(null);
       return;
     }
     try {
@@ -49,6 +48,25 @@ const MyJobs = () => {
       setActiveJobId(jobId);
     } catch (error) {
       console.error(error);
+    }
+  };
+
+  const handleUpdateStatus = async (appId, newStatus) => {
+    const confirmMsg = newStatus === 'accepted' 
+      ? "Энэ хүнийг үнэхээр ажилд авах уу?" 
+      : "Энэ хүнд татгалзсан хариу өгөх үү?";
+      
+    if (window.confirm(confirmMsg)) {
+      try {
+        await axios.put(`http://localhost:5000/api/applications/${appId}/status`, { status: newStatus });
+        
+        setApplications(applications.map(app => 
+          app._id === appId ? { ...app, status: newStatus } : app
+        ));
+      } catch (error) {
+        console.error(error);
+        alert("Төлөв өөрчлөхөд алдаа гарлаа.");
+      }
     }
   };
 
@@ -82,24 +100,67 @@ const MyJobs = () => {
                 </div>
               </div>
 
-              {/* Хүсэлтүүд дэлгэгдэж харагдах хэсэг */}
               {activeJobId === job._id && (
                 <div className="mt-6 pt-6 border-t border-gray-100">
                   <h4 className="font-bold text-gray-900 mb-4">Ирсэн хүсэлтүүд ({applications.length})</h4>
                   {applications.length === 0 ? (
                     <p className="text-gray-500 text-sm italic">Одоогоор хүсэлт ирээгүй байна.</p>
                   ) : (
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                       {applications.map(app => (
-                        <div key={app._id} className="bg-gray-50 p-4 rounded-xl border border-gray-200">
-                          <div className="flex justify-between items-start mb-2">
+                        <div key={app._id} className={`p-5 rounded-xl border ${app.status === 'accepted' ? 'bg-green-50 border-green-200' : app.status === 'rejected' ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'}`}>
+                          
+                          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-3">
                             <div>
-                              <p className="font-bold text-gray-900">{app.applicantName}</p>
-                              <a href={`mailto:${app.applicantEmail}`} className="text-sm text-blue-600 hover:underline">{app.applicantEmail}</a>
+                              <p className="font-bold text-gray-900 text-lg">{app.applicantName}</p>
+                              <a href={`mailto:${app.applicantEmail}`} className="text-sm text-blue-600 hover:underline font-medium">{app.applicantEmail}</a>
+                              <span className="text-xs text-gray-400 ml-3">{new Date(app.createdAt).toLocaleDateString()}</span>
                             </div>
-                            <span className="text-xs text-gray-400">{new Date(app.createdAt).toLocaleDateString()}</span>
+                            
+                            <div>
+                              {app.status === 'pending' ? (
+                                <div className="flex gap-2">
+                                  <button onClick={() => handleUpdateStatus(app._id, 'accepted')} className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition-colors">
+                                    ✅ Ажилд авах
+                                  </button>
+                                  <button onClick={() => handleUpdateStatus(app._id, 'rejected')} className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition-colors">
+                                    ❌ Татгалзах
+                                  </button>
+                                </div>
+                              ) : (
+                                <span className={`px-4 py-2 rounded-lg text-sm font-bold uppercase tracking-wider ${app.status === 'accepted' ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800'}`}>
+                                  {app.status === 'accepted' ? '🎉 Тэнцсэн' : 'Татгалзсан'}
+                                </span>
+                              )}
+                            </div>
                           </div>
-                          <p className="text-gray-700 text-sm mt-2 whitespace-pre-wrap">{app.coverLetter}</p>
+
+                          {/* Илгээсэн захидал (Cover Letter) */}
+                          <p className="text-gray-700 text-sm mt-3 whitespace-pre-wrap bg-white p-4 rounded-lg border border-gray-100">
+                            <span className="font-bold text-gray-500 block mb-1">Илгээсэн захидал:</span>
+                            {app.coverLetter}
+                          </p>
+
+                          {/* CV МЭДЭЭЛЭЛ ХАРУУЛАХ ХЭСЭГ */}
+                          <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
+                            <div>
+                              <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Мэргэжил</p>
+                              <p className="font-bold text-gray-900 text-sm">{app.profession}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Ур чадвар</p>
+                              <p className="font-medium text-blue-600 text-sm">{app.skills}</p>
+                            </div>
+                            <div className="md:col-span-2">
+                              <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Туршлага</p>
+                              <p className="text-sm text-gray-700 whitespace-pre-wrap">{app.experience}</p>
+                            </div>
+                            <div className="md:col-span-2">
+                              <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Танилцуулга</p>
+                              <p className="text-sm text-gray-700 whitespace-pre-wrap">{app.bio}</p>
+                            </div>
+                          </div>
+
                         </div>
                       ))}
                     </div>
