@@ -10,12 +10,21 @@ const userSchema = new mongoose.Schema({
     default: 'worker'
   },
   
-  // --- CV / ПРОФАЙЛЫН МЭДЭЭЛЛҮҮД (Шинээр нэмэгдсэн) ---
-  profession: { type: String, default: '' }, // Мэргэжил (Жнь: Вэб хөгжүүлэгч)
-  bio: { type: String, default: '' },        // Товч танилцуулга
-  skills: { type: String, default: '' },     // Ур чадварууд
-  experience: { type: String, default: '' }  // Туршлага
-
+  // --- CV / ПРОФАЙЛЫН МЭДЭЭЛЛҮҮД ---
+  age: { type: Number, default: null },       // ШИНЭ: Нас
+  gender: { type: String, default: '' },      // ШИНЭ: Хүйс
+  profession: { type: String, default: '' },  // Мэргэжил 
+  bio: { type: String, default: '' },         // Товч танилцуулга
+  skills: { type: String, default: '' },      // Ур чадварууд
+  
+  experience: [
+    {
+      title: { type: String },       
+      company: { type: String },     
+      duration: { type: String },    
+      description: { type: String }  
+    }
+  ]
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', userSchema);

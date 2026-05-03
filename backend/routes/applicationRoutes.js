@@ -1,17 +1,22 @@
 const express = require('express');
 const router = express.Router();
+const authMiddleware = require('../middleware/authMiddleware');
 const { 
   createApplication, 
   getJobApplications, 
   getAllApplications, 
   updateApplicationStatus, 
-  getApplicantApplications // ШИНЭЭР НЭМЛЭЭ
+  getApplicantApplications,
+  getEmployerApplications // ҮҮНИЙГ НЭМСЭН
 } = require('../controllers/applicationController'); 
 
-router.post('/', createApplication);
+router.post('/', authMiddleware, createApplication);
 router.get('/job/:jobId', getJobApplications);
 router.get('/', getAllApplications);
-router.put('/:id/status', updateApplicationStatus);
-router.get('/applicant/:applicantId', getApplicantApplications); // ЭНЭ МӨРИЙГ ШИНЭЭР НЭМЛЭЭ
+router.put('/:id/status', authMiddleware, updateApplicationStatus);
+
+router.get('/worker', authMiddleware, getApplicantApplications);
+// АЖИЛ ОЛГОГЧИЙН ЗАМ (ЭНЭ БАЙХГҮЙГЭЭС БОЛООД ХООСОН БАЙСАН)
+router.get('/employer', authMiddleware, getEmployerApplications); 
 
 module.exports = router;

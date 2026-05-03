@@ -84,7 +84,7 @@ const Home = () => {
               {/* --- ЗӨВХӨН АДМИН Л ХАРНА --- */}
               {user.role === 'admin' && (
                 <Link to='/admin' className='bg-red-500 text-white font-bold px-5 py-2.5 rounded-xl hover:bg-red-600 transition-all flex items-center gap-2 shadow-lg shadow-red-500/20'>
-                  ⚙️ Админ Самбар
+                   Админ Самбар
                 </Link>
               )}
 
@@ -96,6 +96,9 @@ const Home = () => {
                   </Link>
                   <Link to='/add-job' className='bg-blue-600 text-white px-5 py-2.5 rounded-xl hover:bg-blue-700 transition-all'>
                     Зар оруулах
+                  </Link>
+                  <Link to="/my-workers" className="bg-blue-100 text-blue-700 px-4 py-2 rounded-xl text-sm font-bold hover:bg-blue-200 transition-colors flex items-center gap-2">
+                    Миний ажилтнууд
                   </Link>
                 </>
               )}

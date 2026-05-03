@@ -2,7 +2,6 @@ const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-// Токен үүсгэдэг нууц түлхүүр
 const JWT_SECRET = "MediJobSuperSecretKey2026"; 
 
 // 1. Шинээр бүртгүүлэх (Register)
@@ -53,6 +52,8 @@ const loginUser = async (req, res) => {
       name: user.name,
       email: user.email,
       role: user.role,
+      age: user.age,             
+      gender: user.gender,       
       profession: user.profession,
       bio: user.bio,
       skills: user.skills,
@@ -64,7 +65,7 @@ const loginUser = async (req, res) => {
   }
 };
 
-// --- 3. Бүх хэрэглэгчдийг татах (Зөвхөн Админ үзэх зориулалттай) ---
+// 3. Бүх хэрэглэгчдийг татах
 const getAllUsers = async (req, res) => {
   try {
     const users = await User.find().select('-password').sort({ createdAt: -1 });
@@ -74,19 +75,21 @@ const getAllUsers = async (req, res) => {
   }
 };
 
-// --- 4. Профайл (CV) шинэчлэх ---
+// 4. Профайл (CV) шинэчлэх - НАЙДВАРТАЙ ГАНЦХАН ХУВИЛБАР
 const updateProfile = async (req, res) => {
   try {
     const updatedUser = await User.findByIdAndUpdate(
       req.params.id,
       {
+        age: req.body.age,             
+        gender: req.body.gender,       
         profession: req.body.profession,
         bio: req.body.bio,
         skills: req.body.skills,
         experience: req.body.experience
       },
-      { new: true } // Шинэчлэгдсэн датаг буцаах
-    ).select('-password'); // Нууц үгийг нь харуулахгүй
+      { new: true } 
+    ).select('-password'); 
 
     res.status(200).json(updatedUser);
   } catch (error) {
@@ -94,5 +97,4 @@ const updateProfile = async (req, res) => {
   }
 };
 
-// БҮХ 4 ФУНКЦ ЭНД БАЙГАА
 module.exports = { registerUser, loginUser, getAllUsers, updateProfile };

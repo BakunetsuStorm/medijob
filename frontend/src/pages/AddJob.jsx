@@ -12,8 +12,8 @@ const AddJob = () => {
     employerName: '',
     salary: '',
     salaryType: 'цаг',
-    locationType: 'Зайнаас', // Шинэ: Анхны утга нь Зайнаас
-    requirements: '',         // Шинэ: Ажлын шаардлага
+    locationType: 'Зайнаас',
+    requirements: '',
   });
 
   const handleChange = (e) => {
@@ -38,7 +38,12 @@ const AddJob = () => {
 
     setLoading(true);
     try {
-      await axios.post('http://localhost:5000/api/jobs', formData);
+      // ЭНД АЛДААГ ЗАССАН: headers дотор token-ийг илгээж байна!
+      await axios.post('http://localhost:5000/api/jobs', formData, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        }
+      });
       alert('Ажлын зар амжилттай нэмэгдлээ!');
       navigate('/');
     } catch (error) {
@@ -76,24 +81,59 @@ const AddJob = () => {
             <div>
               <h3 className="text-lg font-bold text-gray-900 mb-5 border-b border-gray-100 pb-2">Ерөнхий мэдээлэл</h3>
               <div className="space-y-5">
+                
+                {/* Ажлын гарчиг */}
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-2">Ажлын гарчиг</label>
-                  <input type="text" name="title" required value={formData.title} onChange={handleChange} placeholder="Жнь: Вэб сайт хөгжүүлэх React хөгжүүлэгч" className="block w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 font-medium placeholder-gray-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all sm:text-sm" />
+                  <input 
+                    type="text" 
+                    name="title" 
+                    required 
+                    value={formData.title} 
+                    onChange={handleChange} 
+                    placeholder="Жнь: Ахлах вэб хөгжүүлэгч" 
+                    className="block w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 font-medium placeholder-gray-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all sm:text-sm" 
+                  />
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-start">
+                  {/* Ажлын ангилал (Dropdown) */}
                   <div>
                     <label className="block text-sm font-bold text-gray-700 mb-2">Ажлын ангилал</label>
-                    <input type="text" name="category" required value={formData.category} onChange={handleChange} placeholder="Жнь: Вэб хөгжүүлэлт" className="block w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 font-medium placeholder-gray-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all sm:text-sm" />
+                    <select
+                      name="category"
+                      required
+                      value={formData.category}
+                      onChange={handleChange}
+                      className="block w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all sm:text-sm cursor-pointer"
+                    >
+                      <option value="" disabled>-- Ангилал сонгох --</option>
+                      <option value="Вэб хөгжүүлэлт">Вэб хөгжүүлэлт</option>
+                      <option value="График дизайн">График дизайн</option>
+                      <option value="Орчуулга">Орчуулга</option>
+                      <option value="Маркетинг">Маркетинг</option>
+                      <option value="Бусад">Бусад</option>
+                    </select>
                   </div>
+
+                  {/* Ажил олгогчийн нэр */}
                   <div>
                     <label className="block text-sm font-bold text-gray-700 mb-2">Ажил олгогчийн нэр</label>
-                    <input type="text" name="employerName" required value={formData.employerName} onChange={handleChange} placeholder="Жнь: Tech ХХК" className="block w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 font-medium placeholder-gray-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all sm:text-sm" />
+                    <input 
+                      type="text" 
+                      name="employerName" 
+                      required 
+                      value={formData.employerName} 
+                      onChange={handleChange} 
+                      placeholder="Жнь: Tech ХХК" 
+                      className="block w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 font-medium placeholder-gray-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all sm:text-sm" 
+                    />
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* 2. Ажлын нөхцөл & Шаардлага (ШИНЭ ХЭСЭГ) */}
+            {/* 2. Ажлын нөхцөл & Шаардлага */}
             <div>
               <h3 className="text-lg font-bold text-gray-900 mb-5 border-b border-gray-100 pb-2">Ажлын нөхцөл & Шаардлага</h3>
               <div className="space-y-6">
@@ -113,9 +153,6 @@ const AddJob = () => {
                           : "bg-white border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-900"
                         }`}
                       >
-                        {type === 'Зайнаас' && ' '}
-                        {type === 'Оффис' && ' '}
-                        {type === 'Холимог' && ' '}
                         {type}
                       </button>
                     ))}
@@ -158,7 +195,7 @@ const AddJob = () => {
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-2">Цалин бодох төрөл</label>
                   <div className="relative">
-                    <select name="salaryType" value={formData.salaryType} onChange={handleChange} className="block w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 font-medium appearance-none focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all sm:text-sm cursor-pointer">
+                    <select name="salaryType" value={formData.salaryType} onChange={handleChange} className="block w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all sm:text-sm cursor-pointer">
                       <option value="цаг">Цагаар</option>
                       <option value="өдөр">Өдрөөр</option>
                       <option value="төсөл">Төслөөр</option>

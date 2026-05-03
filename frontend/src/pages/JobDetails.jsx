@@ -1,133 +1,190 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { AuthContext } from '../context/AuthContext'; // Ой санамжийг дуудах
+import { AuthContext } from '../context/AuthContext';
 
 const JobDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user } = useContext(AuthContext); // Хэн нэвтэрснийг шалгах
+  const { user } = useContext(AuthContext);
   
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
   
-  // Хүсэлт илгээх төлөвүүд
-  const [isApplying, setIsApplying] = useState(false);
-  const [coverLetter, setCoverLetter] = useState('');
+  // Үнэлгээний State
+  const [reviews, setReviews] = useState([]);
+  const [averageRating, setAverageRating] = useState(0);
+  const [totalReviews, setTotalReviews] = useState(0);
 
   useEffect(() => {
-    const fetchJobDetails = async () => {
-      try {
-        const response = await axios.get(`http://localhost:5000/api/jobs/${id}`);
-        setJob(response.data);
-      } catch (error) {
-        console.error('Ажлын мэдээлэл татахад алдаа гарлаа:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchJobDetails();
+    fetchJobAndReviews();
   }, [id]);
 
-  const handleApply = async () => {
-    if (!user) {
-      alert("Та эхлээд нэвтэрч орно уу!");
-      return navigate('/login');
-    }
-    if (user.role !== 'worker') {
-      return alert("Зөвхөн Ажил хайгч хүсэлт илгээх боломжтой!");
-    }
-    
+  const fetchJobAndReviews = async () => {
     try {
-      const applicationData = {
-        jobId: job._id,
-        jobTitle: job.title,
-        applicantId: user._id,
-        applicantName: user.name,
-        applicantEmail: user.email,
-        employerName: job.employerName,
-        coverLetter: coverLetter,
-        
-        // --- ҮҮНИЙГ АВТОМАТААР ХАВСРАХААР НЭМЛЭЭ ---
-        profession: user.profession || 'Оруулаагүй',
-        bio: user.bio || 'Оруулаагүй',
-        skills: user.skills || 'Оруулаагүй',
-        experience: user.experience || 'Оруулаагүй'
-      };
+      // 1. Ажлын мэдээллийг татах
+      const jobRes = await axios.get(`http://localhost:5000/api/jobs/${id}`);
+      setJob(jobRes.data);
 
-      await axios.post('http://localhost:5000/api/applications', applicationData);
-      alert("Таны хүсэлт амжилттай илгээгдлээ! Ажил олгогч тантай холбогдох болно.");
-      setIsApplying(false); 
+      // 2. Тухайн ажил олгогчид ирсэн үнэлгээнүүдийг татах
+      // jobRes.data.employerId нь тухайн компанийн User ID байна
+      const reviewRes = await axios.get(`http://localhost:5000/api/reviews/${jobRes.data.employerId}`);
+      setReviews(reviewRes.data.reviews);
+      setAverageRating(reviewRes.data.averageRating);
+      setTotalReviews(reviewRes.data.totalReviews);
+
     } catch (error) {
-      console.error(error);
-      alert("Хүсэлт илгээхэд алдаа гарлаа.");
+      console.error("Мэдээлэл татахад алдаа гарлаа:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  if (loading) return <div className="min-h-screen flex justify-center items-center"><div className="animate-spin rounded-full h-12 w-12 border-[3px] border-gray-200 border-t-blue-600"></div></div>;
-  if (!job) return <div className="text-center mt-20">Ажлын зар олдсонгүй</div>;
+  const handleApply = async () => {
+    if (!user) {
+      alert("Та эхлээд нэвтэрсэн байх шаардлагатай.");
+      navigate('/login');
+      return;
+    }
+    
+    // Ажил олгогч хүн өөрийнхөө болон бусдын ажилд орох хүсэлт өгөхөөс сэргийлэх
+    if (user.role === 'employer') {
+      alert("Ажил олгогч ажилд орох хүсэлт илгээх боломжгүй.");
+      return;
+    }
+    
+    try {
+      // Backend-ийн шаардаж буй БҮХ мэдээллийг багцалж илгээх (Cover Letter-ийг автоматаар бөглөв)
+      const applicationData = {
+        jobId: id,
+        employerId: job.employerId,
+        jobTitle: job.title,
+        employerName: job.employerName,
+        applicantName: user.name,
+        applicantEmail: user.email,
+        coverLetter: "Профайлаар хүсэлт илгээв" // Хэрэглэгчээс асуухгүйгээр шууд автоматаар явуулна
+      };
+
+      await axios.post('http://localhost:5000/api/applications', applicationData, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      
+      alert("Ажилд орох хүсэлт амжилттай илгээгдлээ!");
+      navigate('/my-applications');
+    } catch (error) {
+      console.error(error);
+      alert(error.response?.data?.message || "Хүсэлт илгээхэд алдаа гарлаа.");
+    }
+  };
+  if (loading) return <div className="flex justify-center py-20 font-bold">Уншиж байна...</div>;
+  if (!job) return <div className="text-center py-20 font-bold">Ажлын зар олдсонгүй.</div>;
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans pb-20">
-      <div className="bg-white border-b border-gray-200 pt-10 pb-12 px-6 md:px-12 lg:px-24">
-        <div className="max-w-6xl mx-auto">
-          <button onClick={() => navigate(-1)} className="text-gray-500 hover:text-gray-900 font-semibold text-sm transition-colors mb-8">← Буцах</button>
-          <span className="inline-block px-3.5 py-1.5 rounded-full bg-blue-50 text-blue-700 font-bold text-xs uppercase tracking-wide mb-4">{job.category}</span>
-          <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight mb-4">{job.title}</h1>
-          <p className="text-gray-500 font-medium font-bold">{job.employerName}</p>
-        </div>
-      </div>
+    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6">
+      <div className="max-w-4xl mx-auto">
+        
+        {/* Буцах товч */}
+        <Link to="/" className="text-gray-500 hover:text-black font-bold text-sm mb-6 inline-flex items-center gap-2">
+          ← Буцах
+        </Link>
 
-      <div className="max-w-6xl mx-auto px-6 md:px-12 lg:px-24 mt-10">
-        <div className="flex flex-col lg:flex-row gap-8 items-start">
-          
-          <div className="w-full lg:w-2/3 space-y-8">
-            <div className="bg-white p-8 md:p-10 rounded-3xl border border-gray-100 shadow-sm">
-              <h3 className="text-2xl font-bold text-gray-900 mb-6">Ажлын тухай & Шаардлага</h3>
-              <div className="text-gray-600 leading-relaxed font-medium whitespace-pre-wrap">
-                {job.requirements || "Дэлгэрэнгүй мэдээлэл одоогоор алга байна."}
-              </div>
-            </div>
-          </div>
-
-          <div className="w-full lg:w-1/3 sticky top-28">
-            <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-lg">
-              <p className="text-gray-500 font-bold text-sm uppercase tracking-wider mb-2">Цалин</p>
-              <div className="flex items-baseline gap-2 text-gray-900 mb-8">
-                <span className="text-4xl font-black text-blue-600">{job.salary.toLocaleString()}₮</span>
-                <span className="text-lg font-bold text-gray-400">/ {job.salaryType}</span>
-              </div>
-
-              {!isApplying ? (
-                <button 
-                  onClick={() => setIsApplying(true)}
-                  className="w-full bg-blue-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:bg-blue-700 hover:-translate-y-0.5 transition-all mb-4"
-                >
-                  Ажилд орох хүсэлт илгээх
-                </button>
-              ) : (
-                <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 animate-fade-in">
-                  <label className="block text-sm font-bold text-blue-900 mb-2">Товч танилцуулга / Сэтгэгдэл:</label>
-                  <textarea 
-                    rows="4" 
-                    value={coverLetter}
-                    onChange={(e) => setCoverLetter(e.target.value)}
-                    placeholder="Сайн байна уу, би энэ ажлыг..."
-                    className="w-full p-3 rounded-lg border border-blue-200 focus:ring-2 focus:ring-blue-600 mb-4 text-sm"
-                  ></textarea>
-                  <div className="flex gap-2">
-                    <button onClick={handleApply} className="flex-1 bg-blue-600 text-white font-bold py-2 rounded-lg hover:bg-blue-700">Илгээх</button>
-                    <button onClick={() => setIsApplying(false)} className="flex-1 bg-white text-gray-600 font-bold py-2 rounded-lg border border-gray-200 hover:bg-gray-50">Цуцлах</button>
-                  </div>
+        {/* Ажлын үндсэн мэдээлэл */}
+        <div className="bg-white rounded-3xl p-8 md:p-12 shadow-sm border border-gray-100 mb-8">
+          <div className="flex flex-col md:flex-row justify-between items-start gap-6 mb-10">
+            <div>
+              <h1 className="text-3xl md:text-4xl font-black text-gray-900 mb-4">{job.title}</h1>
+              <div className="flex flex-wrap items-center gap-4">
+                <span className="font-bold text-lg text-blue-600">{job.employerName}</span>
+                
+                {/* ОДООНЫ ДУНДАЖ ҮНЭЛГЭЭГ ХАРУУЛАХ */}
+                <div className="flex items-center gap-1 bg-yellow-50 px-3 py-1 rounded-full border border-yellow-100">
+                  <svg className="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
+                  <span className="text-yellow-700 font-black text-sm">{averageRating}</span>
+                  <span className="text-yellow-600/60 text-xs font-bold">({totalReviews})</span>
                 </div>
-              )}
+              </div>
+            </div>
+            
+            <div className="text-right">
+              <div className="text-2xl font-black text-gray-900">{Number(job.salary).toLocaleString()}₮</div>
+              <div className="text-gray-400 font-bold text-sm">/ {job.salaryType}</div>
             </div>
           </div>
 
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10 border-y border-gray-50 py-6">
+            <div>
+              <div className="text-gray-400 text-xs font-bold uppercase mb-1">Төрөл</div>
+              <div className="font-bold text-gray-900">{job.category}</div>
+            </div>
+            <div>
+              <div className="text-gray-400 text-xs font-bold uppercase mb-1">Байршил</div>
+              <div className="font-bold text-gray-900">{job.locationType}</div>
+            </div>
+            <div>
+              <div className="text-gray-400 text-xs font-bold uppercase mb-1">Огноо</div>
+              <div className="font-bold text-gray-900">{new Date(job.createdAt).toLocaleDateString()}</div>
+            </div>
+          </div>
+
+          <div className="mb-10">
+            <h3 className="text-xl font-bold text-gray-900 mb-4">Ажлын тайлбар & Шаардлага</h3>
+            <p className="text-gray-600 leading-relaxed whitespace-pre-line font-medium">
+              {job.requirements}
+            </p>
+          </div>
+
+          {user?.role !== 'employer' && (
+            <button 
+              onClick={handleApply}
+              className="w-full bg-blue-600 text-white py-4 rounded-2xl font-black text-lg hover:bg-blue-700 transition-all shadow-xl shadow-blue-600/20"
+            >
+              Ажилд орох хүсэлт илгээх
+            </button>
+          )}
         </div>
+
+        {/* --- ҮНЭЛГЭЭ БОЛОН СЭТГЭГДЛИЙН ХЭСЭГ --- */}
+        <div className="bg-white rounded-3xl p-8 md:p-12 shadow-sm border border-gray-100">
+          <h3 className="text-2xl font-black text-gray-900 mb-8 flex items-center gap-3">
+            Сэтгэгдэлүүд 
+            <span className="text-sm bg-gray-100 px-3 py-1 rounded-full text-gray-500 font-bold">{totalReviews}</span>
+          </h3>
+
+          {reviews.length === 0 ? (
+            <p className="text-gray-400 font-medium italic text-center py-10">Энэ байгууллагад одоогоор үнэлгээ ирээгүй байна.</p>
+          ) : (
+            <div className="space-y-8">
+              {reviews.map((rev) => (
+                <div key={rev._id} className="border-b border-gray-50 last:border-none pb-8 last:pb-0">
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center text-blue-600 font-black">
+                        {rev.reviewerId?.name?.charAt(0)}
+                      </div>
+                      <div>
+                        <div className="font-bold text-gray-900">{rev.reviewerId?.name}</div>
+                        <div className="text-xs text-gray-400 font-medium">{new Date(rev.createdAt).toLocaleDateString()}</div>
+                      </div>
+                    </div>
+                    <div className="flex gap-0.5">
+                      {[...Array(5)].map((_, i) => (
+                        <svg key={i} className={`w-4 h-4 ${i < rev.rating ? 'text-yellow-400' : 'text-gray-200'}`} fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                        </svg>
+                      ))}
+                    </div>
+                  </div>
+                  <p className="text-gray-600 font-medium pl-13">{rev.comment}</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
       </div>
     </div>
   );
 };
+
 
 export default JobDetails;

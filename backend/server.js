@@ -29,3 +29,7 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Сервер ${PORT} порт дээр ажиллаж эхэллээ`);
 });
+
+// Бусад route-үүдийн доор үүнийг нэмнэ үү:
+const reviewRoutes = require('./routes/reviewRoutes');
+app.use('/api/reviews', reviewRoutes);
