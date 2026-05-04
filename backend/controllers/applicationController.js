@@ -10,9 +10,17 @@ const createApplication = async (req, res) => {
       return res.status(404).json({ message: "Ажлын зар олдсонгүй." });
     }
 
-    // Хэрэв хуучин алдаатай зар байвал шууд зогсоож анхааруулна
     if (!job.employerId) {
-      return res.status(400).json({ message: "Энэхүү ажлын заранд Ажил олгогчийн мэдээлэл дутуу байна. Та хуучин заруудаа устгаад ШИНЭЭР зар нэмж туршина уу!" });
+      return res.status(400).json({ message: "Энэхүү ажлын заранд Ажил олгогчийн мэдээлэл дутуу байна." });
+    }
+
+    const existingApp = await Application.findOne({ 
+      jobId: req.body.jobId, 
+      applicantId: req.user.id 
+    });
+    
+    if (existingApp) {
+      return res.status(400).json({ message: "Та энэ ажилд аль хэдийн хүсэлт илгээсэн байна!" });
     }
 
     const applicationData = {
@@ -26,7 +34,6 @@ const createApplication = async (req, res) => {
     
     res.status(201).json({ message: "Ажилд орох хүсэлт амжилттай илгээгдлээ!" });
   } catch (error) {
-    console.error("Өргөдөл хадгалах алдаа:", error);
     res.status(500).json({ message: "Алдаа гарлаа", error: error.message });
   }
 };
@@ -35,8 +42,8 @@ const createApplication = async (req, res) => {
 const getJobApplications = async (req, res) => {
   try {
     const apps = await Application.find({ jobId: req.params.jobId })
-      // ШИНЭЭР age gender гэдэг үг нэмэгдсэн
-      .populate('applicantId', 'profession bio skills experience name email age gender'); 
+      // 🔥 ЭНД profilePicture НЭМЭГДСЭН
+      .populate('applicantId', 'profession bio skills experience name email age gender profilePicture phone'); 
     res.status(200).json(apps);
   } catch (error) {
     res.status(500).json({ message: "Алдаа гарлаа", error });
@@ -103,8 +110,8 @@ const getEmployerApplications = async (req, res) => {
   try {
     const apps = await Application.find({ employerId: req.user.id })
       .populate('jobId', 'title') 
-      // ШИНЭЭР age gender гэдэг үг нэмэгдсэн
-      .populate('applicantId', 'name email profession bio skills experience age gender') 
+      // 🔥 ЭНД profilePicture НЭМЭГДСЭН
+      .populate('applicantId', 'name email profession bio skills experience age gender profilePicture phone') 
       .sort({ createdAt: -1 });
       
     res.status(200).json(apps);

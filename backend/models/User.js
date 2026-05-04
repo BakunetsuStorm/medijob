@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
+  phone: { type: String, default: '' },
   password: { type: String, required: true },
   role: {
     type: String,
@@ -10,12 +11,16 @@ const userSchema = new mongoose.Schema({
     default: 'worker'
   },
   
+  // 🔥 ШИНЭ: ЗУРАГ БОЛОН АЖИЛ ОЛГОГЧИЙН МЭДЭЭЛЭЛ
+  profilePicture: { type: String, default: '' }, // Цээж зураг эсвэл Лого
+  website: { type: String, default: '' },        // Компанийн вэбсайт
+
   // --- CV / ПРОФАЙЛЫН МЭДЭЭЛЛҮҮД ---
-  age: { type: Number, default: null },       // ШИНЭ: Нас
-  gender: { type: String, default: '' },      // ШИНЭ: Хүйс
-  profession: { type: String, default: '' },  // Мэргэжил 
-  bio: { type: String, default: '' },         // Товч танилцуулга
-  skills: { type: String, default: '' },      // Ур чадварууд
+  age: { type: Number, default: null },       
+  gender: { type: String, default: '' },      
+  profession: { type: String, default: '' },  
+  bio: { type: String, default: '' },         
+  skills: { type: String, default: '' },      
   
   experience: [
     {

@@ -8,11 +8,15 @@ import { AuthContext } from "../context/AuthContext";
 const Home = () => {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
-  
   const { user, logout } = useContext(AuthContext); 
 
+  // 🔥 ШИНЭЧЛЭГДСЭН: Хайлт болон Шүүлтүүрийн State-үүд
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Бүгд");
+  const [filterWorkType, setFilterWorkType] = useState("Бүгд"); // Зайнаас, Оффис...
+  const [filterLocation, setFilterLocation] = useState("");     // Хаяг
+  const [minSalary, setMinSalary] = useState("");               // Доод цалин
+  const [showAdvancedSearch, setShowAdvancedSearch] = useState(false); // Дэлгэрэнгүй хайлт харуулах/нуух
 
   const categories = ['Бүгд', 'Вэб хөгжүүлэлт', 'График дизайн', 'Орчуулга', 'Маркетинг', 'Бусад'];
 
@@ -30,12 +34,32 @@ const Home = () => {
     fetchJobs();
   }, []);
 
+// 🔥 ШИНЭЧЛЭГДСЭН: Нарийвчилсан шүүлтүүр БА ЭРЭМБЭЛЭЛТ (Sort)
   const filteredJobs = jobs.filter((job) => {
-    const matchesSearch = 
-      job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      job.employerName.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === "Бүгд" || job.category.includes(selectedCategory);
-    return matchesSearch && matchesCategory;
+    const matchText = job.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                      job.employerName.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    const matchCategory = selectedCategory === "Бүгд" || job.category.includes(selectedCategory);
+    
+    const matchWorkType = filterWorkType === "Бүгд" || job.locationType === filterWorkType;
+    
+    const matchLocation = filterLocation === "" || 
+                          (job.location && job.location.toLowerCase().includes(filterLocation.toLowerCase()));
+                          
+    const matchSalary = minSalary === "" || Number(job.salary) >= Number(minSalary);
+
+    return matchText && matchCategory && matchWorkType && matchLocation && matchSalary;
+  }).sort((a, b) => {
+    // 1. Үнэлгээгээр нь ихээс нь бага руу эрэмбэлэх
+    const ratingA = a.rating || 0;
+    const ratingB = b.rating || 0;
+    
+    if (ratingB !== ratingA) {
+      return ratingB - ratingA; // Үнэлгээ өндөртэй нь дээшээ гарна
+    }
+    
+    // 2. Хэрэв үнэлгээ тэнцүү (эсвэл хоёулаа 0 буюу шинэ зар) бол хамгийн сүүлд нэмэгдсэн нь дээрээ гарна
+    return new Date(b.createdAt) - new Date(a.createdAt);
   });
 
   return (
@@ -48,111 +72,100 @@ const Home = () => {
           Medi<span className="text-blue-600">Job.</span>
         </Link>
 
-        {/* ШИНЭЧЛЭГДСЭН ЦЭСНҮҮД */}
         <div className='hidden md:flex space-x-8 font-semibold text-sm text-gray-600'>
-          <button 
-            onClick={() => document.getElementById('jobs-section').scrollIntoView({ behavior: 'smooth' })} 
-            className='hover:text-black transition-colors cursor-pointer'
-          >
-            Ажил хайх
-          </button>
-          <button 
-            onClick={() => document.getElementById('workflow-section').scrollIntoView({ behavior: 'smooth' })} 
-            className='hover:text-black transition-colors cursor-pointer'
-          >
-            Хэрхэн ажилладаг вэ?
-          </button>
+          <button onClick={() => document.getElementById('jobs-section').scrollIntoView({ behavior: 'smooth' })} className='hover:text-black transition-colors'>Ажил хайх</button>
+          <button onClick={() => document.getElementById('workflow-section').scrollIntoView({ behavior: 'smooth' })} className='hover:text-black transition-colors'>Хэрхэн ажилладаг вэ?</button>
         </div>
 
-        {/* НЭВТРЭСЭН ЭСЭХИЙГ ШАЛГАХ ХЭСЭГ */}
         <div className='flex items-center gap-4 text-sm font-bold'>
           {user ? (
             <div className="flex items-center gap-4">
-              
-              {/* Профайл руу ордог нэр */}
-              <Link to="/profile" className="text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors px-4 py-2 rounded-full hidden sm:inline-block cursor-pointer">
+              <Link to="/profile" className="text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors px-4 py-2 rounded-full hidden sm:inline-block">
                 Сайн уу, <span className="text-black font-black">{user.name}</span> 
               </Link>
               
-              {/* --- ЗӨВХӨН АЖИЛ ХАЙГЧ Л ХАРНА --- */}
-              {user.role === 'worker' && (
-                <Link to='/my-applications' className='text-blue-600 bg-blue-50 hover:bg-blue-100 font-bold px-5 py-2.5 rounded-xl transition-all'>
-                  Миний хүсэлтүүд
-                </Link>
-              )}
-
-              {/* --- ЗӨВХӨН АДМИН Л ХАРНА --- */}
-              {user.role === 'admin' && (
-                <Link to='/admin' className='bg-red-500 text-white font-bold px-5 py-2.5 rounded-xl hover:bg-red-600 transition-all flex items-center gap-2 shadow-lg shadow-red-500/20'>
-                   Админ Самбар
-                </Link>
-              )}
-
-              {/* ЗӨВХӨН АЖИЛ ОЛГОГЧ Л ХАРНА */}
+              {user.role === 'worker' && (<Link to='/my-applications' className='text-blue-600 bg-blue-50 hover:bg-blue-100 font-bold px-5 py-2.5 rounded-xl transition-all'>Миний хүсэлтүүд</Link>)}
+              {user.role === 'admin' && (<Link to='/admin' className='bg-red-500 text-white font-bold px-5 py-2.5 rounded-xl hover:bg-red-600 transition-all'>Админ Самбар</Link>)}
               {user.role === 'employer' && (
                 <>
-                  <Link to='/my-jobs' className='text-gray-600 hover:text-black font-bold transition-colors'>
-                    Миний зарууд
-                  </Link>
-                  <Link to='/add-job' className='bg-blue-600 text-white px-5 py-2.5 rounded-xl hover:bg-blue-700 transition-all'>
-                    Зар оруулах
-                  </Link>
-                  <Link to="/my-workers" className="bg-blue-100 text-blue-700 px-4 py-2 rounded-xl text-sm font-bold hover:bg-blue-200 transition-colors flex items-center gap-2">
-                    Миний ажилтнууд
-                  </Link>
+                  <Link to='/my-jobs' className='text-gray-600 hover:text-black font-bold'>Миний зарууд</Link>
+                  <Link to='/add-job' className='bg-blue-600 text-white px-5 py-2.5 rounded-xl hover:bg-blue-700 transition-all'>Зар оруулах</Link>
+                  <Link to="/my-workers" className="bg-blue-100 text-blue-700 px-4 py-2 rounded-xl text-sm hover:bg-blue-200">Миний ажилтнууд</Link>
                 </>
               )}
-
-              <button 
-                onClick={logout} 
-                className="text-red-500 hover:text-red-600 transition-colors font-bold"
-              >
-                Гарах
-              </button>
+              <button onClick={logout} className="text-red-500 hover:text-red-600 font-bold">Гарах</button>
             </div>
           ) : (
             <>
-              <Link to='/login' className='text-gray-600 hover:text-black transition-colors'>
-                Нэвтрэх
-              </Link>
-              <Link to='/register' className='bg-blue-600 text-white px-5 py-2.5 rounded-xl hover:bg-blue-700 transition-all'>
-                Бүртгүүлэх
-              </Link>
+              <Link to='/login' className='text-gray-600 hover:text-black'>Нэвтрэх</Link>
+              <Link to='/register' className='bg-blue-600 text-white px-5 py-2.5 rounded-xl hover:bg-blue-700'>Бүртгүүлэх</Link>
             </>
           )}
         </div>
       </nav>
 
-      {/* 2. Hero Section */}
+      {/* 2. Hero Section & Advanced Search */}
       <section className='relative w-full px-6 md:px-12 lg:px-24 pt-24 pb-32 flex flex-col items-center justify-center border-b border-gray-100'>
         <div className="absolute inset-0 z-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#000 1px, transparent 1px)', backgroundSize: '24px 24px' }}></div>
-        <div className="relative z-10 w-full max-w-4xl text-center flex flex-col items-center">
+        <div className="relative z-10 w-full max-w-4xl flex flex-col items-center">
+          
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 border border-blue-100 text-blue-700 font-bold text-xs uppercase tracking-widest mb-8">
             <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span>
             Монголын #1 Freelance Платформ
           </div>
-          <h1 className='text-5xl md:text-7xl font-black tracking-tight mb-6 leading-[1.1]'>
+          <h1 className='text-5xl md:text-7xl font-black tracking-tight mb-6 text-center leading-[1.1]'>
             Ур чадвараа <br className="hidden md:block" />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-violet-600">
-              Жинхэнэ Үнэ Цэнэ
-            </span> болго
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-violet-600">Жинхэнэ Үнэ Цэнэ</span> болго
           </h1>
-          <p className='text-gray-500 text-lg md:text-xl mb-12 max-w-2xl font-medium'>
+          <p className='text-gray-500 text-lg md:text-xl mb-12 max-w-2xl text-center font-medium'>
             Дизайн, хөгжүүлэлт, орчуулга зэрэг 100+ ангилалд мянга мянган боломжууд таныг хүлээж байна.
           </p>
 
-          <div className="w-full max-w-2xl bg-white p-2 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-gray-100 flex items-center gap-2 transition-shadow focus-within:shadow-[0_8px_30px_rgb(37,99,235,0.12)] focus-within:border-blue-200">
-            <div className="pl-4 text-gray-400">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" /></svg>
+          {/* ҮНДСЭН ХАЙЛТЫН ХЭСЭГ */}
+          <div className="w-full bg-white p-2 rounded-2xl shadow-xl border border-gray-100 flex flex-col gap-2">
+            <div className="flex items-center gap-2 w-full">
+              <div className="pl-4 text-gray-400">🔍</div>
+              <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Гарчиг эсвэл Компанийн нэрээр хайх..." className="w-full py-4 px-2 text-gray-800 font-bold bg-transparent outline-none placeholder-gray-400"/>
+              
+              {/* Дэлгэрэнгүй хайлт нээх товч */}
+              <button 
+                onClick={() => setShowAdvancedSearch(!showAdvancedSearch)} 
+                className="hidden md:flex items-center gap-1 text-sm font-bold text-gray-500 hover:text-blue-600 px-4 whitespace-nowrap border-r border-gray-200"
+              >
+                {showAdvancedSearch ? 'Хаах' : 'Нарийвчлах '}
+              </button>
+
+              <button onClick={() => document.getElementById('jobs-section').scrollIntoView({ behavior: 'smooth' })} className="bg-black text-white px-8 py-4 rounded-xl font-bold hover:bg-gray-800 transition-colors whitespace-nowrap">Хайх</button>
             </div>
-            <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Ямар ажил хайж байна вэ?" className="w-full py-4 px-2 text-gray-800 font-medium bg-transparent border-none outline-none placeholder-gray-400"/>
-            <button onClick={() => document.getElementById('jobs-section').scrollIntoView({ behavior: 'smooth' })} className="bg-black text-white px-8 py-4 rounded-xl font-bold hover:bg-gray-800 transition-colors whitespace-nowrap">Хайх</button>
+
+            {/* 🔥 ДЭЛГЭРЭНГҮЙ ХАЙЛТ (ШҮҮЛТҮҮРҮҮД) */}
+            {showAdvancedSearch && (
+              <div className="p-4 border-t border-gray-100 bg-gray-50/50 rounded-xl grid grid-cols-1 md:grid-cols-3 gap-4 animate-in slide-in-from-top-2">
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Ажиллах хэлбэр</label>
+                  <select value={filterWorkType} onChange={(e) => setFilterWorkType(e.target.value)} className="w-full p-3 rounded-lg border border-gray-200 font-bold text-sm outline-none focus:border-blue-500">
+                    <option value="Бүгд">Бүх хэлбэр</option>
+                    <option value="Зайнаас">Зайнаас</option>
+                    <option value="Оффис">Оффис</option>
+                    <option value="Холимог">Холимог</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Байршил / Хаяг</label>
+                  <input type="text" value={filterLocation} onChange={(e) => setFilterLocation(e.target.value)} placeholder="Жнь: СБД, Багшийн дээд" className="w-full p-3 rounded-lg border border-gray-200 font-bold text-sm outline-none focus:border-blue-500" disabled={filterWorkType === 'Зайнаас'}/>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Доод цалин (₮)</label>
+                  <input type="number" value={minSalary} onChange={(e) => setMinSalary(e.target.value)} placeholder="Жнь: 50000" className="w-full p-3 rounded-lg border border-gray-200 font-bold text-sm outline-none focus:border-blue-500"/>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="flex flex-wrap items-center justify-center gap-3 mt-8">
-            <span className="text-sm font-bold text-gray-400 mr-2">Түгээмэл:</span>
+            <span className="text-sm font-bold text-gray-400 mr-2">Ангилал:</span>
             {categories.map((tag, idx) => (
-              <button key={idx} onClick={() => setSelectedCategory(tag)} className={`px-4 py-1.5 rounded-full border text-sm font-semibold cursor-pointer transition-all ${selectedCategory === tag ? 'bg-black border-black text-white shadow-md' : 'bg-white border-gray-200 text-gray-600 hover:border-black hover:text-black'}`}>{tag}</button>
+              <button key={idx} onClick={() => setSelectedCategory(tag)} className={`px-4 py-1.5 rounded-full border text-sm font-semibold transition-all ${selectedCategory === tag ? 'bg-black border-black text-white shadow-md' : 'bg-white border-gray-200 text-gray-600 hover:border-black hover:text-black'}`}>{tag}</button>
             ))}
           </div>
         </div>
@@ -174,7 +187,7 @@ const Home = () => {
         <div className='flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-4'>
           <div>
             <div className="flex items-center gap-2 mb-2"><span className="w-8 h-1 bg-blue-600 rounded-full"></span><h2 className="text-sm font-bold text-blue-600 uppercase tracking-widest">{selectedCategory === "Бүгд" ? "Шинээр нэмэгдсэн" : `${selectedCategory} чиглэлээр`}</h2></div>
-            <h3 className='text-3xl md:text-4xl font-black text-gray-900'>{searchQuery ? `"${searchQuery}" хайлтын үр дүн` : "Хамгийн сүүлийн үеийн ажлууд"}</h3>
+            <h3 className='text-3xl md:text-4xl font-black text-gray-900'>{searchQuery || filterLocation || minSalary ? `Хайлтын үр дүн` : "Хамгийн сүүлийн үеийн ажлууд"}</h3>
           </div>
           <p className='text-gray-500 font-bold'>Нийт <span className="text-blue-600">{filteredJobs.length}</span> ажил олдлоо</p>
         </div>
@@ -184,7 +197,7 @@ const Home = () => {
         ) : filteredJobs.length === 0 ? (
           <div className='text-center bg-white rounded-3xl py-32 border border-gray-100 shadow-sm'>
             <h4 className="text-xl font-bold text-gray-900 mb-2">Илэрц олдсонгүй</h4>
-            <button onClick={() => { setSearchQuery(""); setSelectedCategory("Бүгд"); }} className="mt-6 text-blue-600 font-bold hover:underline">Шүүлтүүр цэвэрлэх</button>
+            <button onClick={() => { setSearchQuery(""); setSelectedCategory("Бүгд"); setFilterWorkType("Бүгд"); setFilterLocation(""); setMinSalary(""); }} className="mt-6 text-blue-600 font-bold hover:underline">Шүүлтүүр цэвэрлэх</button>
           </div>
         ) : (
           <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'>

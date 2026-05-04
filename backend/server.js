@@ -5,8 +5,9 @@ require('dotenv').config();
 
 const app = express();
 
-// Миддлевар тохиргоо 
-app.use(express.json());
+// Миддлевар тохиргоо (Хуучин зөвхөн app.use(express.json()); байсныг ингэж томруулна)
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(cors());
 
 // MongoDB-тэй холбогдох хэсэг

@@ -4,46 +4,30 @@ const jwt = require('jsonwebtoken');
 
 const JWT_SECRET = "MediJobSuperSecretKey2026"; 
 
-// 1. Шинээр бүртгүүлэх (Register)
 const registerUser = async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
-
     const userExists = await User.findOne({ email });
-    if (userExists) {
-      return res.status(400).json({ message: 'Энэ и-мэйл хаяг бүртгэлтэй байна!' });
-    }
+    if (userExists) return res.status(400).json({ message: 'Энэ и-мэйл хаяг бүртгэлтэй байна!' });
 
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    const user = await User.create({
-      name,
-      email,
-      password: hashedPassword,
-      role
-    });
-
+    await User.create({ name, email, password: hashedPassword, role });
     res.status(201).json({ message: 'Амжилттай бүртгүүллээ!' });
   } catch (error) {
     res.status(500).json({ message: 'Бүртгэхэд алдаа гарлаа', error });
   }
 };
 
-// 2. Нэвтрэх (Login)
 const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
-
     const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(404).json({ message: 'Бүртгэлгүй и-мэйл байна!' });
-    }
+    if (!user) return res.status(404).json({ message: 'Бүртгэлгүй и-мэйл байна!' });
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(400).json({ message: 'Нууц үг буруу байна!' });
-    }
+    if (!isMatch) return res.status(400).json({ message: 'Нууц үг буруу байна!' });
 
     const token = jwt.sign({ id: user._id, role: user.role }, JWT_SECRET, { expiresIn: '1d' });
 
@@ -51,7 +35,10 @@ const loginUser = async (req, res) => {
       _id: user._id,
       name: user.name,
       email: user.email,
+      phone: user.phone,
       role: user.role,
+      profilePicture: user.profilePicture, // Зураг
+      website: user.website,               // Вэбсайт
       age: user.age,             
       gender: user.gender,       
       profession: user.profession,
@@ -65,7 +52,6 @@ const loginUser = async (req, res) => {
   }
 };
 
-// 3. Бүх хэрэглэгчдийг татах
 const getAllUsers = async (req, res) => {
   try {
     const users = await User.find().select('-password').sort({ createdAt: -1 });
@@ -75,12 +61,15 @@ const getAllUsers = async (req, res) => {
   }
 };
 
-// 4. Профайл (CV) шинэчлэх - НАЙДВАРТАЙ ГАНЦХАН ХУВИЛБАР
+// 🔥 ШИНЭЧИЛСЭН: Зураг болон Вэбсайт хадгалах мөр нэмэгдэв
 const updateProfile = async (req, res) => {
   try {
     const updatedUser = await User.findByIdAndUpdate(
       req.params.id,
       {
+        phone: req.body.phone,
+        profilePicture: req.body.profilePicture,
+        website: req.body.website,
         age: req.body.age,             
         gender: req.body.gender,       
         profession: req.body.profession,
