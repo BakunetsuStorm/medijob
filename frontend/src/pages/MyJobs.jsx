@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
 const LOCATION_DATA = {
   "Улаанбаатар": {
     "Багануур дүүрэг": 5, "Багахангай дүүрэг": 2, "Баянгол дүүрэг (БГД)": 34,
-    "Баянзүрх дүүрэг (БЗД)": 43, "Налайх дүүрэг": 8, "Сонгинохайрхан дүүрэг (СХД)": 43,
+    "Баянзүрх дүүрэг (БЗД)": 43, "Налайх дүүрэг": 8, "Сүхбаатар дүүрэг (СБД)": 20, "Сонгинохайрхан дүүрэг (СХД)": 43,
     "Хан-Уул дүүрэг (ХУД)": 25, "Чингэлтэй дүүрэг (ЧД)": 24
   }
 };
@@ -243,7 +243,7 @@ const MyJobs = () => {
                             <div className="mb-6 flex items-center justify-center sm:justify-start">
                               {(app.status === 'accepted' || app.status === 'completed') ? (
                                 <div className="flex items-center gap-3 bg-green-50 border border-green-200 text-green-700 px-5 py-3 rounded-2xl animate-in fade-in zoom-in duration-300">
-                                  <div className="bg-green-100 p-2 rounded-full">📞</div>
+                                  <div className="bg-green-100 p-2 rounded-full"></div>
                                   <div>
                                     <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-0.5">Утасны дугаар</p>
                                     <p className="font-black text-lg tracking-wide">{app.applicantId?.phone || 'Оруулаагүй байна'}</p>

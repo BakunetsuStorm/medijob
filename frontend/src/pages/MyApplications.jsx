@@ -53,7 +53,7 @@ const MyApplications = () => {
       await axios.post('http://localhost:5000/api/reviews', reviewData, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
-      alert('⭐️ Үнэлгээ амжилттай илгээгдлээ! Баярлалаа.');
+      alert(' Үнэлгээ амжилттай илгээгдлээ! Баярлалаа.');
       setIsModalOpen(false);
     } catch (error) {
       alert(error.response?.data?.message || 'Үнэлгээ өгөхөд алдаа гарлаа.');
@@ -91,9 +91,9 @@ const MyApplications = () => {
                     app.status === 'rejected' ? 'bg-red-100 text-red-700' :
                     'bg-yellow-100 text-yellow-700'
                   }`}>
-                    {app.status === 'accepted' ? '🎉 Тэнцсэн' : 
-                     app.status === 'completed' ? '✅ Ажил дууссан' : 
-                     app.status === 'rejected' ? '❌ Татгалзсан' : '⏳ Хүлээгдэж байна'}
+                    {app.status === 'accepted' ? ' Тэнцсэн' : 
+                     app.status === 'completed' ? ' Ажил дууссан' : 
+                     app.status === 'rejected' ? ' Татгалзсан' : ' Хүлээгдэж байна'}
                   </span>
 
                       
@@ -108,7 +108,7 @@ const MyApplications = () => {
                       }}
                       className="bg-gray-900 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-gray-800 transition-colors"
                     >
-                      ⭐️ Компанийг дүгнэх
+                       Компанийг дүгнэх
                     </button>
                   )}
                 </div>
