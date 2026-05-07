@@ -6,14 +6,26 @@ const JWT_SECRET = "MediJobSuperSecretKey2026";
 
 const registerUser = async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    // 🔥 ЗАСВАР: Frontend-ээс илгээсэн шинэ талбаруудыг хүлээж авах
+    const { name, email, password, role, professions, companyRegNumber, companyIndustry } = req.body;
+    
     const userExists = await User.findOne({ email });
     if (userExists) return res.status(400).json({ message: 'Энэ и-мэйл хаяг бүртгэлтэй байна!' });
 
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    await User.create({ name, email, password: hashedPassword, role });
+    // 🔥 ЗАСВАР: Бааз руу хадгалахдаа шинэ талбаруудыг хамт өгнө
+    await User.create({ 
+      name, 
+      email, 
+      password: hashedPassword, 
+      role,
+      professions: role === 'worker' ? professions : [],
+      companyRegNumber: role === 'employer' ? companyRegNumber : '',
+      companyIndustry: role === 'employer' ? companyIndustry : ''
+    });
+    
     res.status(201).json({ message: 'Амжилттай бүртгүүллээ!' });
   } catch (error) {
     res.status(500).json({ message: 'Бүртгэхэд алдаа гарлаа', error });
@@ -37,11 +49,15 @@ const loginUser = async (req, res) => {
       email: user.email,
       phone: user.phone,
       role: user.role,
-      profilePicture: user.profilePicture, // Зураг
-      website: user.website,               // Вэбсайт
+      profilePicture: user.profilePicture, 
+      website: user.website,              
       age: user.age,             
       gender: user.gender,       
-      profession: user.profession,
+      // 🔥 ЗАСВАР: Нэвтрэхэд эдгээр мэдээллийг буцааж явуулна
+      professions: user.professions,
+      profession: user.profession, 
+      companyRegNumber: user.companyRegNumber,
+      companyIndustry: user.companyIndustry,
       bio: user.bio,
       skills: user.skills,
       experience: user.experience,
@@ -61,9 +77,9 @@ const getAllUsers = async (req, res) => {
   }
 };
 
-// 🔥 ШИНЭЧИЛСЭН: Зураг болон Вэбсайт хадгалах мөр нэмэгдэв
 const updateProfile = async (req, res) => {
   try {
+    // 🔥 ЗАСВАР: Профайл засахад шинэ талбарууд өөрчлөгдөх боломжтой болгох
     const updatedUser = await User.findByIdAndUpdate(
       req.params.id,
       {
@@ -72,7 +88,10 @@ const updateProfile = async (req, res) => {
         website: req.body.website,
         age: req.body.age,             
         gender: req.body.gender,       
+        professions: req.body.professions, 
         profession: req.body.profession,
+        companyRegNumber: req.body.companyRegNumber,
+        companyIndustry: req.body.companyIndustry,
         bio: req.body.bio,
         skills: req.body.skills,
         experience: req.body.experience

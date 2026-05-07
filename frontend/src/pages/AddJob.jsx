@@ -98,13 +98,42 @@ const AddJob = () => {
                   <div>
                     <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Ажлын ангилал</label>
                     <select name="category" required value={formData.category} onChange={handleChange} className="w-full px-4 py-3 bg-gray-50 dark:bg-[#1a1a1a] dark:text-white border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-blue-600 outline-none cursor-pointer transition-colors">
-                      <option value="" disabled>-- Ангилал сонгох --</option>
-                      <option value="Вэб хөгжүүлэлт">Вэб хөгжүүлэлт</option>
-                      <option value="График дизайн">График дизайн</option>
-                      <option value="Орчуулга">Орчуулга</option>
-                      <option value="Маркетинг">Маркетинг</option>
-                      <option value="Мэдээллийн технологи (IT)">Мэдээллийн технологи (IT)</option>
-                      <option value="Бусад">Бусад</option>
+                  <option value="" disabled>-- Ангилал сонгох --</option>
+
+                  {/* Үйлчилгээ, Худалдаа */}
+                  <option value="Зөөгч, Бариста">Зөөгч, Бариста</option>
+                  <option value="Касс, Худалдагч">Касс, Худалдагч</option>
+                  <option value="Угтах үйлчилгээ (Ресепшн)">Угтах үйлчилгээ (Ресепшн)</option>
+                  <option value="Бараа өрөгч, Агуулах">Бараа өрөгч, Агуулах</option>
+                  <option value="Тогооч, Тогоочийн туслах">Тогооч, Тогоочийн туслах</option>
+                  <option value="Цэвэрлэгээ, Үйлчилгээ">Цэвэрлэгээ, Үйлчилгээ</option>
+
+                  {/* Ложистик, Хүргэлт */}
+                  <option value="Түгээлт, Хүргэлт">Түгээлт, Хүргэлт</option>
+                  <option value="Ачигч, Хар ажил">Ачигч, Хар ажил</option>
+                  <option value="Жолооч">Жолооч</option>
+
+                  {/* Оффис, Харилцаа холбоо */}
+                  <option value="Мэдээлэл оруулагч (Data Entry)">Мэдээлэл оруулагч (Data Entry)</option>
+                  <option value="Хэрэглэгчийн төв (Call Center)">Хэрэглэгчийн төв (Call Center)</option>
+                  <option value="Орчуулга">Орчуулга</option>
+
+                  {/* Маркетинг, Борлуулалт */}
+                  <option value="Промоутер, Борлуулалт">Промоутер, Борлуулалт</option>
+                  <option value="Сошиал медиа хөгжүүлэлт">Сошиал медиа хөгжүүлэлт</option>
+                  <option value="Маркетинг, Олон нийттэй харилцах">Маркетинг, Олон нийттэй харилцах</option>
+
+                  {/* Мэдээллийн технологи, Дизайн */}
+                  <option value="Вэб болон Апп хөгжүүлэлт">Вэб болон Апп хөгжүүлэлт</option>
+                  <option value="График дизайн">График дизайн</option>
+                  <option value="Видео эвлүүлэг, Зураг авалт">Видео эвлүүлэг, Зураг авалт</option>
+                  <option value="Мэдээллийн технологи (IT)">Мэдээллийн технологи (IT)</option>
+
+                  {/* Боловсрол, Бусад */}
+                  <option value="Гэрийн багш, Сургалт">Гэрийн багш, Сургалт</option>
+                  <option value="Эвэнт, Арга хэмжээний туслах">Эвэнт, Арга хэмжээний туслах</option>
+                  <option value="Бусад">Бусад</option>
+                        
                     </select>
                   </div>
                   <div>
