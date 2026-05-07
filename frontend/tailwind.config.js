@@ -1,7 +1,9 @@
+/** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: 'class', // 🔥 ЯГ ЭНЭ МӨР ЗААВАЛ БАЙХ ЁСТОЙ
   content: [
     "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}", // <--- Энэ мөр хамгийн чухал нь шүү!
+    "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
     extend: {},

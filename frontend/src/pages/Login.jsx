@@ -27,7 +27,14 @@ const Login = () => {
       login(response.data); 
       
       alert(`Тавтай морил, ${response.data.name}!`);
-      navigate("/"); // Нүүр хуудас руу шиднэ
+      
+      // 🔥 ШИНЭЧЛЭЛТ: Хэрэв админ бол шууд Админ самбар руу шиднэ
+      if (response.data.role === 'admin') {
+        navigate("/admin");
+      } else {
+        navigate("/"); // Энгийн хэрэглэгчдийг нүүр хуудас руу шиднэ
+      }
+      
     } catch (error) {
       console.error("Нэвтрэхэд алдаа:", error);
       // Backend-ээс ирсэн алдааг дэлгэцэнд харуулах
@@ -36,7 +43,8 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex w-full">
+    // 🔥 ШИНЭЧЛЭЛТ: dark:bg-[#0a0a0a] нэмэгдсэн
+    <div className="min-h-screen flex w-full transition-colors duration-300 dark:bg-[#0a0a0a]">
       
       {/* 1. Left Side (Зөвхөн том дэлгэц дээр харагдана) */}
       <div className="hidden lg:flex lg:w-1/2 relative bg-blue-600 overflow-hidden items-center justify-center">
@@ -57,27 +65,28 @@ const Login = () => {
       </div>
 
       {/* 2. Right Side - Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center bg-gray-50 px-6 py-12 relative overflow-y-auto">
-        <Link to="/" className="absolute top-8 left-6 lg:hidden text-gray-400 hover:text-gray-900 font-medium">
+      {/* 🔥 ШИНЭЧЛЭЛТ: dark:bg-[#0a0a0a] нэмэгдсэн */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center bg-gray-50 dark:bg-[#0a0a0a] px-6 py-12 relative overflow-y-auto transition-colors duration-300">
+        <Link to="/" className="absolute top-8 left-6 lg:hidden text-gray-400 hover:text-gray-900 dark:hover:text-white font-medium transition-colors">
           ← Буцах
         </Link>
         <div className="w-full max-w-md my-auto">
           <div className="text-center lg:text-left mb-8">
-            <h2 className="text-3xl font-black text-gray-900 tracking-tight mb-2">Нэвтрэх</h2>
-            <p className="text-gray-500 font-medium">
+            <h2 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight mb-2 transition-colors">Нэвтрэх</h2>
+            <p className="text-gray-500 dark:text-gray-400 font-medium transition-colors">
               Бүртгэлгүй бол{" "}
-              <Link to="/register" className="font-bold text-blue-600 hover:text-blue-700 transition-colors">
+              <Link to="/register" className="font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors">
                 энд дарж бүртгүүлнэ үү
               </Link>
             </p>
           </div>
 
-          <div className="bg-white p-8 sm:p-10 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-gray-100">
+          <div className="bg-white dark:bg-[#111111] p-8 sm:p-10 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-gray-100 dark:border-gray-800 transition-colors duration-300">
             <form className="space-y-6" onSubmit={handleSubmit}>
               
               {/* Алдаа гарвал харагдах хэсэг */}
               {errorMsg && (
-                <div className="p-4 mb-4 text-sm text-red-700 bg-red-50 border border-red-100 rounded-xl font-bold flex items-center gap-2">
+                <div className="p-4 mb-4 text-sm text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/50 rounded-xl font-bold flex items-center gap-2">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
                     <path fillRule="evenodd" d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0Zm-8-5a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-1.5 0v-4.5A.75.75 0 0 1 10 5Zm0 10a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clipRule="evenodd" />
                   </svg>
@@ -86,7 +95,7 @@ const Login = () => {
               )}
 
               <div>
-                <label className="block text-sm font-bold text-gray-900 mb-2">И-мэйл хаяг</label>
+                <label className="block text-sm font-bold text-gray-900 dark:text-gray-300 mb-2 transition-colors">И-мэйл хаяг</label>
                 <input
                   type="email"
                   name="email"
@@ -94,12 +103,12 @@ const Login = () => {
                   value={formData.email}
                   onChange={handleChange}
                   placeholder="name@example.com"
-                  className="block w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 font-medium placeholder-gray-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all sm:text-sm"
+                  className="block w-full px-4 py-3.5 bg-gray-50 dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white font-medium placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-[#222222] focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all sm:text-sm"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-gray-900 mb-2">Нууц үг</label>
+                <label className="block text-sm font-bold text-gray-900 dark:text-gray-300 mb-2 transition-colors">Нууц үг</label>
                 <input
                   type="password"
                   name="password"
@@ -107,13 +116,13 @@ const Login = () => {
                   value={formData.password}
                   onChange={handleChange}
                   placeholder="Нууц үгээ оруулна уу"
-                  className="block w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 font-medium placeholder-gray-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all sm:text-sm"
+                  className="block w-full px-4 py-3.5 bg-gray-50 dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white font-medium placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-[#222222] focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all sm:text-sm"
                 />
               </div>
 
               <button
                 type="submit"
-                className="w-full flex justify-center py-4 px-4 rounded-xl shadow-lg shadow-blue-600/20 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 transition-all hover:-translate-y-0.5 mt-2"
+                className="w-full flex justify-center py-4 px-4 rounded-xl shadow-lg shadow-blue-600/20 dark:shadow-none text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 transition-all hover:-translate-y-0.5 mt-2"
               >
                 Нэвтрэх
               </button>

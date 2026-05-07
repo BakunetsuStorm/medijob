@@ -10,6 +10,19 @@ const userSchema = new mongoose.Schema({
     enum: ['worker', 'employer', 'admin'],
     default: 'worker'
   },
+  professions: {
+    type: [String], // Олон мэргэжил хадгалах Array
+    default: []
+  },
+  // backend/models/User.js доторх userSchema-д нэмэх:
+  companyRegNumber: {
+    type: String, // Байгууллагын регистрийн дугаар
+    default: ""
+  },
+  companyIndustry: {
+    type: String, // Үйл ажиллагааны чиглэл
+    default: ""
+  },
   
   // 🔥 ШИНЭ: ЗУРАГ БОЛОН АЖИЛ ОЛГОГЧИЙН МЭДЭЭЛЭЛ
   profilePicture: { type: String, default: '' }, // Цээж зураг эсвэл Лого

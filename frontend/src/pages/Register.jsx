@@ -8,21 +8,49 @@ const Register = () => {
     name: "",
     email: "",
     password: "",
-    role: "worker", // worker эсвэл employer
+    role: "worker", 
+    professions: [], 
+    companyRegNumber: "", 
+    companyIndustry: "",  
   });
 
-  
+  const availableProfessions = [
+    'Вэб хөгжүүлэлт', 'График дизайн', 'Орчуулга', 
+    'Маркетинг', 'Мэдээллийн технологи (IT)', 'Бусад'
+  ];
+
+  const industries = [
+    'Мэдээллийн технологи, Харилцаа холбоо',
+    'Худалдаа, Үйлчилгээ',
+    'Барилга, Үл хөдлөх хөрөнгө',
+    'Боловсрол, Сургалт',
+    'Эрүүл мэнд, Эмнэлэг',
+    'Уул уурхай, Хүнд үйлдвэр',
+    'Банк, Санхүү',
+    'Бусад'
+  ];
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
- const handleSubmit = async (e) => {
+  const toggleProfession = (prof) => {
+    setFormData((prev) => {
+      const isSelected = prev.professions.includes(prof);
+      if (isSelected) {
+        return { ...prev, professions: prev.professions.filter((p) => p !== prof) };
+      } else {
+        return { ...prev, professions: [...prev.professions, prof] };
+      }
+    });
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Backend рүү датагаа шидэх
       await axios.post("http://localhost:5000/api/auth/register", formData);
       alert("Амжилттай бүртгүүллээ! Одоо нэвтэрч орно уу.");
-      navigate("/login"); // Амжилттай болбол Login руу шиднэ
+      navigate("/login"); 
     } catch (error) {
       console.error("Бүртгэхэд алдаа гарлаа:", error);
       alert(error.response?.data?.message || "Алдаа гарлаа");
@@ -30,16 +58,13 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen flex w-full">
+    // 🔥 ШИНЭЧЛЭЛТ: dark:bg-[#0a0a0a] нэмэгдсэн
+    <div className="min-h-screen flex w-full transition-colors duration-300 dark:bg-[#0a0a0a]">
       
-      {/* 1. Left Side - Rich Visual Branding (Hidden on mobile) */}
+      {/* 1. Left Side */}
       <div className="hidden lg:flex lg:w-1/2 relative bg-blue-600 overflow-hidden items-center justify-center">
-        
-        {/* Background Gradients & Subtle Grid */}
         <div className="absolute inset-0 bg-gradient-to-br from-blue-600 to-indigo-900"></div>
         <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '32px 32px' }}></div>
-        
-        {/* Decorative glowing orbs */}
         <div className="absolute -left-24 -bottom-24 w-96 h-96 bg-blue-400 rounded-full mix-blend-screen filter blur-[100px] opacity-50"></div>
         <div className="absolute -right-24 -top-24 w-96 h-96 bg-indigo-400 rounded-full mix-blend-screen filter blur-[100px] opacity-50"></div>
 
@@ -57,104 +82,109 @@ const Register = () => {
         </div>
       </div>
 
-      {/* 2. Right Side - The Boxed Register Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center bg-gray-50 px-6 py-12 relative overflow-y-auto">
-        
-        {/* Back to home button for mobile only */}
-        <Link to="/" className="absolute top-8 left-6 lg:hidden text-gray-400 hover:text-gray-900 font-medium">
+      {/* 2. Right Side - Form */}
+      {/* 🔥 ШИНЭЧЛЭЛТ: dark:bg-[#0a0a0a] нэмэгдсэн */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center bg-gray-50 dark:bg-[#0a0a0a] px-6 py-12 relative overflow-y-auto transition-colors duration-300">
+        <Link to="/" className="absolute top-8 left-6 lg:hidden text-gray-400 hover:text-gray-900 dark:hover:text-white font-medium transition-colors">
           ← Буцах
         </Link>
 
         <div className="w-full max-w-md my-auto">
           <div className="text-center lg:text-left mb-8">
-            <h2 className="text-3xl font-black text-gray-900 tracking-tight mb-2">Шинээр бүртгүүлэх </h2>
-            <p className="text-gray-500 font-medium">
-              Бүртгэлтэй бол{" "}
-              <Link to="/login" className="font-bold text-blue-600 hover:text-blue-700 transition-colors">
-                энд дарж нэвтэрнэ үү
-              </Link>
+            <h2 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight mb-2 transition-colors">Шинээр бүртгүүлэх</h2>
+            <p className="text-gray-500 dark:text-gray-400 font-medium transition-colors">
+              Бүртгэлтэй бол <Link to="/login" className="font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors">энд дарж нэвтэрнэ үү</Link>
             </p>
           </div>
 
-          {/* The Clearly Boxed Credentials Area */}
-          <div className="bg-white p-8 sm:p-10 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-gray-100">
+          <div className="bg-white dark:bg-[#111111] p-8 sm:p-10 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-gray-100 dark:border-gray-800 transition-colors duration-300">
             <form className="space-y-6" onSubmit={handleSubmit}>
               
-              {/* Custom Role Selector */}
               <div>
-                <label className="block text-sm font-bold text-gray-900 mb-3">Та хэн бэ?</label>
+                <label className="block text-sm font-bold text-gray-900 dark:text-gray-300 mb-3 transition-colors">Та хэн бэ?</label>
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     type="button"
-                    onClick={() => setFormData({ ...formData, role: "worker" })}
+                    onClick={() => setFormData({ ...formData, role: "worker", companyRegNumber: "", companyIndustry: "" })}
                     className={`py-3 px-4 rounded-xl text-sm font-bold transition-all border ${
                       formData.role === "worker" 
-                      ? "bg-blue-50 border-blue-600 text-blue-700 ring-1 ring-blue-600 shadow-sm" 
-                      : "bg-white border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-900"
+                        ? "bg-blue-50 dark:bg-blue-900/30 border-blue-600 text-blue-700 dark:text-blue-400 ring-1 ring-blue-600 shadow-sm" 
+                        : "bg-white dark:bg-[#1a1a1a] border-gray-200 dark:border-gray-700 text-gray-500 hover:bg-gray-50 dark:hover:bg-[#222222] hover:text-gray-900 dark:hover:text-white"
                     }`}
-                  >
-                     Ажил хайгч
-                  </button>
+                  >Ажил хайгч</button>
                   <button
                     type="button"
-                    onClick={() => setFormData({ ...formData, role: "employer" })}
+                    onClick={() => setFormData({ ...formData, role: "employer", professions: [] })}
                     className={`py-3 px-4 rounded-xl text-sm font-bold transition-all border ${
                       formData.role === "employer" 
-                      ? "bg-blue-50 border-blue-600 text-blue-700 ring-1 ring-blue-600 shadow-sm" 
-                      : "bg-white border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-900"
+                        ? "bg-blue-50 dark:bg-blue-900/30 border-blue-600 text-blue-700 dark:text-blue-400 ring-1 ring-blue-600 shadow-sm" 
+                        : "bg-white dark:bg-[#1a1a1a] border-gray-200 dark:border-gray-700 text-gray-500 hover:bg-gray-50 dark:hover:bg-[#222222] hover:text-gray-900 dark:hover:text-white"
                     }`}
-                  >
-                     Ажил олгогч
-                  </button>
+                  >Ажил олгогч</button>
                 </div>
               </div>
 
+              {formData.role === "worker" && (
+                <div className="animate-in fade-in slide-in-from-top-2">
+                  <label className="block text-sm font-bold text-gray-900 dark:text-gray-300 mb-2 transition-colors">Мэргэжил / Чиглэлээ сонгоно уу</label>
+                  <div className="flex flex-wrap gap-2">
+                    {availableProfessions.map((prof, idx) => {
+                      const isSelected = formData.professions.includes(prof);
+                      return (
+                        <button 
+                          key={idx} 
+                          type="button" 
+                          onClick={() => toggleProfession(prof)} 
+                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${
+                            isSelected 
+                              ? 'bg-blue-600 border-blue-600 text-white shadow-md' 
+                              : 'bg-gray-50 dark:bg-[#1a1a1a] border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-gray-400 dark:hover:border-gray-500 hover:text-gray-900 dark:hover:text-white'
+                          }`}
+                        >
+                          {isSelected ? '✓ ' : ''}{prof}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {formData.role === "employer" && (
+                <div className="space-y-6 animate-in fade-in slide-in-from-top-2">
+                  <div>
+                    <label className="block text-sm font-bold text-gray-900 dark:text-gray-300 mb-2 transition-colors">Байгууллагын Регистр <span className="text-gray-400 dark:text-gray-500 font-medium text-xs">(Хувь хүн бол хоосон орхино)</span></label>
+                    <input type="text" name="companyRegNumber" value={formData.companyRegNumber} placeholder="Жнь: 1234567" onChange={handleChange} className="block w-full px-4 py-3.5 bg-gray-50 dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white font-medium focus:bg-white dark:focus:bg-[#222222] focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all sm:text-sm" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-gray-900 dark:text-gray-300 mb-2 transition-colors">Үйл ажиллагааны чиглэл <span className="text-gray-400 dark:text-gray-500 font-medium text-xs">(Нэмэлт)</span></label>
+                    <select name="companyIndustry" value={formData.companyIndustry} onChange={handleChange} className="block w-full px-4 py-3.5 bg-gray-50 dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white font-medium focus:bg-white dark:focus:bg-[#222222] focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all sm:text-sm cursor-pointer">
+                      <option value="">-- Сонгохгүй байж болно --</option>
+                      {industries.map((ind, idx) => (
+                        <option key={idx} value={ind}>{ind}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              )}
+
               <div>
-                <label className="block text-sm font-bold text-gray-900 mb-2">Овог, Нэр / Байгууллага</label>
-                <input
-                  type="text"
-                  name="name"
-                  placeholder="Жнь: Батдорж"
-                  required
-                  onChange={handleChange}
-                  className="block w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 font-medium placeholder-gray-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all sm:text-sm"
-                />
+                <label className="block text-sm font-bold text-gray-900 dark:text-gray-300 mb-2 transition-colors">{formData.role === 'employer' ? 'Овог нэр эсвэл Байгууллагын нэр' : 'Овог, Нэр'}</label>
+                <input type="text" name="name" placeholder={formData.role === 'employer' ? "Жнь: Тест ХХК эсвэл Батдорж" : "Жнь: Батдорж"} required onChange={handleChange} className="block w-full px-4 py-3.5 bg-gray-50 dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white font-medium placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-[#222222] focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all sm:text-sm" />
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-gray-900 mb-2">И-мэйл хаяг</label>
-                <input
-                  type="email"
-                  name="email"
-                  placeholder="name@example.com"
-                  required
-                  onChange={handleChange}
-                  className="block w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 font-medium placeholder-gray-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all sm:text-sm"
-                />
+                <label className="block text-sm font-bold text-gray-900 dark:text-gray-300 mb-2 transition-colors">И-мэйл хаяг</label>
+                <input type="email" name="email" placeholder="name@example.com" required onChange={handleChange} className="block w-full px-4 py-3.5 bg-gray-50 dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white font-medium placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-[#222222] focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all sm:text-sm" />
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-gray-900 mb-2">Нууц үг</label>
-                <input
-                  type="password"
-                  name="password"
-                  placeholder="Хамгийн багадаа 8 тэмдэгт"
-                  required
-                  onChange={handleChange}
-                  className="block w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 font-medium placeholder-gray-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all sm:text-sm"
-                />
+                <label className="block text-sm font-bold text-gray-900 dark:text-gray-300 mb-2 transition-colors">Нууц үг</label>
+                <input type="password" name="password" placeholder="Хамгийн багадаа 8 тэмдэгт" required onChange={handleChange} className="block w-full px-4 py-3.5 bg-gray-50 dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white font-medium placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-[#222222] focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all sm:text-sm" />
               </div>
 
-              <button
-                type="submit"
-                className="w-full flex justify-center mt-2 py-4 px-4 rounded-xl shadow-lg shadow-blue-600/20 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 hover:shadow-blue-600/40 focus:outline-none transition-all hover:-translate-y-0.5"
-              >
+              <button type="submit" disabled={formData.role === 'worker' && formData.professions.length === 0} className="w-full flex justify-center mt-2 py-4 px-4 rounded-xl shadow-lg shadow-blue-600/20 dark:shadow-none text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:dark:bg-gray-600 disabled:shadow-none focus:outline-none transition-all hover:-translate-y-0.5">
                 Бүртгэл үүсгэх
               </button>
-              
-              <p className="text-xs text-center text-gray-400 mt-4 font-medium">
-                Бүртгүүлснээр та манай <a href="#" className="underline hover:text-gray-600">Үйлчилгээний нөхцөл</a>-ийг зөвшөөрсөнд тооцно.
-              </p>
             </form>
           </div>
         </div>
