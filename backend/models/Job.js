@@ -10,9 +10,16 @@ const jobSchema = new mongoose.Schema({
   salaryType: { type: String, enum: ['цаг', 'өдөр', 'төсөл'], required: true },
   
   locationType: { type: String, enum: ['Зайнаас', 'Оффис', 'Холимог'], default: 'Зайнаас' },
-  // 🔥 ШИНЭ: Яг хаана байрлалтайг бичих талбар
   location: { type: String, default: '' }, 
   
+  // 🔥 ШИНЭ: Түр зуурын ажил
+  isTemporary: { type: Boolean, default: false },
+  durationText: { type: String, default: '' },
+  
+  // 🔥 ШИНЭ: Тогтмол давтамжтай ажил
+  isRecurring: { type: Boolean, default: false },
+  recurringDays: { type: [String], default: [] }, // Жнь: ['Даваа', 'Лхагва']
+
   requirements: { type: String, required: false },
   rating: { type: Number, default: 0 },
   coverImage: { type: String, default: 'https://via.placeholder.com/400x200?text=Job+Image' }

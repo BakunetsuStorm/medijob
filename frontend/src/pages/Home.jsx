@@ -10,12 +10,12 @@ const Home = () => {
   const [loading, setLoading] = useState(true);
   const { user, logout } = useContext(AuthContext); 
 
-  // 🔥 ШИНЭ: Dark Mode төлөв (Local Storage-аас шалгах)
+  // Dark Mode төлөв
   const [darkMode, setDarkMode] = useState(
     localStorage.getItem('theme') === 'dark'
   );
 
-  // 🔥 ШИНЭ: Dark Mode солих үйлдэл
+  // Dark Mode солих үйлдэл
   useEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add('dark');
@@ -34,6 +34,10 @@ const Home = () => {
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false); 
   const [matchMySkills, setMatchMySkills] = useState(false);
   const [minRating, setMinRating] = useState(0); 
+  
+  // 🔥 ШИНЭ: Түр зуурын болон Давтамжтай ажлын шүүлтүүр
+  const [onlyTemporary, setOnlyTemporary] = useState(false);
+  const [onlyRecurring, setOnlyRecurring] = useState(false);
 
   const categories = ['Бүгд', 'Вэб хөгжүүлэлт', 'График дизайн', 'Орчуулга', 'Маркетинг', 'Мэдээллийн технологи (IT)', 'Бусад'];
 
@@ -62,6 +66,10 @@ const Home = () => {
     const jobRating = job.rating || 0;
     const matchRatingValue = jobRating >= minRating; 
 
+    // 🔥 ШИНЭ ЛОГИК: Түр зуурын болон Давтамжтай шүүлтүүр
+    const matchTemporary = onlyTemporary ? job.isTemporary === true : true;
+    const matchRecurring = onlyRecurring ? job.isRecurring === true : true;
+
     let isSkillMatch = true;
     if (matchMySkills && user && user.role === 'worker') {
       if (user.professions && user.professions.length > 0) {
@@ -71,7 +79,7 @@ const Home = () => {
       }
     }
 
-    return matchText && matchCategory && matchWorkType && matchLocation && matchSalary && isSkillMatch && matchRatingValue;
+    return matchText && matchCategory && matchWorkType && matchLocation && matchSalary && isSkillMatch && matchRatingValue && matchTemporary && matchRecurring;
   }).sort((a, b) => {
     const ratingA = a.rating || 0;
     const ratingB = b.rating || 0;
@@ -79,10 +87,9 @@ const Home = () => {
     return new Date(b.createdAt) - new Date(a.createdAt);
   });
 
-  const isSearching = searchQuery || filterLocation || minSalary || selectedCategory !== "Бүгд" || matchMySkills || minRating > 0;
+  const isSearching = searchQuery || filterLocation || minSalary || selectedCategory !== "Бүгд" || matchMySkills || minRating > 0 || onlyTemporary || onlyRecurring;
 
   return (
-    // 🔥 Бусад хэсгийн өнгөнүүдийг dark: хувилбараар нэмсэн
     <div className='min-h-screen bg-gray-50 dark:bg-[#0a0a0a] font-sans text-gray-900 dark:text-gray-100 flex flex-col transition-colors duration-300'>
       
       {/* 1. Navbar */}
@@ -99,7 +106,6 @@ const Home = () => {
 
         <div className='flex items-center gap-4 text-sm font-bold'>
           
-          {/* 🔥 ШИНЭ: Dark Mode Toggle Товч */}
           <button 
             onClick={() => setDarkMode(prev => !prev)}
             className="p-2 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all text-lg"
@@ -162,8 +168,9 @@ const Home = () => {
           </div>
 
           {showAdvancedSearch && (
-            <div className="absolute top-full left-0 right-0 mt-4 p-5 bg-white dark:bg-[#1a1a1a] border border-gray-100 dark:border-gray-800 rounded-2xl shadow-2xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-in slide-in-from-top-2 text-left z-50">
-              <div>
+            <div className="absolute top-full left-0 right-0 mt-4 p-5 bg-white dark:bg-[#1a1a1a] border border-gray-100 dark:border-gray-800 rounded-2xl shadow-2xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 animate-in slide-in-from-top-2 text-left z-50">
+              
+              <div className="xl:col-span-1">
                 <label className="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase mb-1.5">Ажиллах хэлбэр</label>
                 <select value={filterWorkType} onChange={(e) => setFilterWorkType(e.target.value)} className="w-full p-3 rounded-xl border border-gray-200 dark:border-gray-700 font-bold text-sm outline-none focus:border-blue-500 dark:focus:border-blue-500 bg-gray-50 dark:bg-[#222222] dark:text-white cursor-pointer">
                   <option value="Бүгд">Бүгд</option>
@@ -172,22 +179,55 @@ const Home = () => {
                   <option value="Холимог">Холимог</option>
                 </select>
               </div>
-              <div>
+
+              <div className="xl:col-span-1">
                 <label className="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase mb-1.5">Байршил</label>
                 <input type="text" value={filterLocation} onChange={(e) => setFilterLocation(e.target.value)} placeholder="Жнь: СБД" className="w-full p-3 rounded-xl border border-gray-200 dark:border-gray-700 font-bold text-sm outline-none focus:border-blue-500 dark:focus:border-blue-500 bg-gray-50 dark:bg-[#222222] dark:text-white" disabled={filterWorkType === 'Зайнаас'}/>
               </div>
-              <div>
+
+              <div className="xl:col-span-1">
                 <label className="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase mb-1.5">Доод цалин (₮)</label>
                 <input type="number" value={minSalary} onChange={(e) => setMinSalary(e.target.value)} placeholder="Жнь: 50000" className="w-full p-3 rounded-xl border border-gray-200 dark:border-gray-700 font-bold text-sm outline-none focus:border-blue-500 dark:focus:border-blue-500 bg-gray-50 dark:bg-[#222222] dark:text-white"/>
               </div>
-              <div>
-                <label className="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase mb-1.5">Ажил олгогчийн үнэлгээ</label>
+
+              <div className="xl:col-span-1">
+                <label className="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase mb-1.5">Байгууллагын үнэлгээ</label>
                 <select value={minRating} onChange={(e) => setMinRating(Number(e.target.value))} className="w-full p-3 rounded-xl border border-gray-200 dark:border-gray-700 font-bold text-sm outline-none focus:border-yellow-500 dark:focus:border-yellow-500 bg-gray-50 dark:bg-[#222222] dark:text-white cursor-pointer">
-                  <option value={0}>Бүгд (Үнэлгээ хамаарахгүй)</option>
-                  <option value={4}>⭐ 4.0 - өөс дээш</option>
-                  <option value={3}>⭐ 3.0 - аас дээш</option>
+                  <option value={0}>Бүгд</option>
+                  <option value={4}>4.0-өөс дээш</option>
+                  <option value={3}>3.0-аас дээш</option>
                 </select>
               </div>
+
+              {/* 🔥 ШИНЭ: Төрлөөр шүүх хэсэг */}
+              <div className="xl:col-span-2 flex flex-col justify-end gap-3 pt-2">
+                <label className="flex items-center gap-2 cursor-pointer group">
+                  <div className="relative flex items-center">
+                    <input 
+                      type="checkbox" 
+                      checked={onlyTemporary}
+                      onChange={(e) => setOnlyTemporary(e.target.checked)}
+                      className="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-gray-300 dark:border-gray-600 checked:bg-orange-500 checked:border-orange-500 transition-all"
+                    />
+                    <span className="absolute text-white opacity-0 peer-checked:opacity-100 pointer-events-none top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-bold text-xs">✓</span>
+                  </div>
+                  <span className="text-sm font-bold text-gray-700 dark:text-gray-300 group-hover:text-orange-500 transition-colors">Зөвхөн түр зуурын ажил</span>
+                </label>
+
+                <label className="flex items-center gap-2 cursor-pointer group">
+                  <div className="relative flex items-center">
+                    <input 
+                      type="checkbox" 
+                      checked={onlyRecurring}
+                      onChange={(e) => setOnlyRecurring(e.target.checked)}
+                      className="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-gray-300 dark:border-gray-600 checked:bg-teal-500 checked:border-teal-500 transition-all"
+                    />
+                    <span className="absolute text-white opacity-0 peer-checked:opacity-100 pointer-events-none top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-bold text-xs">✓</span>
+                  </div>
+                  <span className="text-sm font-bold text-gray-700 dark:text-gray-300 group-hover:text-teal-500 transition-colors">Зөвхөн давтамжтай ажил</span>
+                </label>
+              </div>
+
             </div>
           )}
         </div>
@@ -209,9 +249,11 @@ const Home = () => {
                 <h1 className='text-3xl md:text-4xl font-black tracking-tight mb-3 text-gray-900 dark:text-white'>
                   Хайлтын үр дүн
                 </h1>
-                <p className='text-gray-500 dark:text-gray-400 text-sm md:text-base font-medium flex items-center gap-2'>
+                <p className='text-gray-500 dark:text-gray-400 text-sm md:text-base font-medium flex flex-wrap items-center gap-2'>
                   Нийт <span className="text-blue-600 dark:text-blue-400 font-bold">{filteredJobs.length}</span> ажил олдлоо.
-                  {minRating > 0 && <span className="bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-400 text-[10px] px-2 py-0.5 rounded-full font-bold">⭐ {minRating}.0+ үнэлгээтэй</span>}
+                  {minRating > 0 && <span className="bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-400 text-[10px] px-2 py-0.5 rounded-full font-bold">4.0+ үнэлгээтэй</span>}
+                  {onlyTemporary && <span className="bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-400 text-[10px] px-2 py-0.5 rounded-full font-bold">Түр зуурын</span>}
+                  {onlyRecurring && <span className="bg-teal-100 dark:bg-teal-900/30 text-teal-800 dark:text-teal-400 text-[10px] px-2 py-0.5 rounded-full font-bold">Давтамжтай</span>}
                 </p>
               </>
             ) : (
@@ -261,7 +303,7 @@ const Home = () => {
             {matchMySkills && (!user.professions || user.professions.length === 0) ? (
               <p className="text-gray-500 dark:text-gray-400 mb-4 text-sm">Та профайл дээрээ мэргэжлээ оруулаагүй байна.</p>
             ) : null}
-            <button onClick={() => { setSearchQuery(""); setSelectedCategory("Бүгд"); setFilterWorkType("Бүгд"); setFilterLocation(""); setMinSalary(""); setMatchMySkills(false); setMinRating(0); }} className="mt-4 text-blue-600 dark:text-blue-400 text-sm font-bold hover:underline">Шүүлтүүр цэвэрлэх</button>
+            <button onClick={() => { setSearchQuery(""); setSelectedCategory("Бүгд"); setFilterWorkType("Бүгд"); setFilterLocation(""); setMinSalary(""); setMatchMySkills(false); setMinRating(0); setOnlyTemporary(false); setOnlyRecurring(false); }} className="mt-4 text-blue-600 dark:text-blue-400 text-sm font-bold hover:underline">Шүүлтүүр цэвэрлэх</button>
           </div>
         ) : (
           <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'>

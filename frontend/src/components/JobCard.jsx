@@ -22,13 +22,11 @@ const JobCard = ({ job }) => {
   return (
     <Link 
       to={`/job/${job._id}`} 
-      // 🔥 ШИНЭЧЛЭЛТ: dark: классууд нэмэгдсэн
       className="group bg-white dark:bg-[#1a1a1a] rounded-3xl border border-gray-100 dark:border-gray-800 overflow-hidden hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] dark:hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)] hover:-translate-y-1.5 transition-all duration-300 flex flex-col h-full cursor-pointer block"
     >
       
       {/* 1. Cover Image */}
       <div className={`relative h-48 bg-gradient-to-br ${gradientClass} overflow-hidden`}>
-        {/* Гоё хээ нэмэх (Subtle Pattern) */}
         <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white to-transparent"></div>
         <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors duration-300"></div>
         
@@ -42,9 +40,17 @@ const JobCard = ({ job }) => {
       <div className="p-6 flex flex-col flex-grow relative">
         
         {/* Title */}
-        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 line-clamp-2 leading-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">
+        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3 line-clamp-2 leading-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">
           {job.title}
         </h3>
+
+        {/* 🔥 Түр зуурын ажил байвал тусгай Badge энд харуулна (Гарчигны доор) */}
+        {job.isTemporary && (
+          <div className="mb-4 w-fit inline-flex items-center gap-1.5 bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 px-2.5 py-1 rounded-md text-xs font-bold border border-orange-200/50 dark:border-orange-800/50">
+            <span className="text-[10px]">⏱</span> 
+            <span>{job.durationText}</span>
+          </div>
+        )}
 
         {/* Employer Info */}
         <div className="flex items-center gap-3 mb-6 mt-auto">
@@ -57,7 +63,7 @@ const JobCard = ({ job }) => {
         </div>
 
         {/* 3. Footer */}
-        <div className="pt-5 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between">
+        <div className="pt-5 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between mt-auto">
           
           <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 text-yellow-500">

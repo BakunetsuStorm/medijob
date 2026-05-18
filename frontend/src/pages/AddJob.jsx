@@ -16,6 +16,8 @@ const LOCATION_DATA = {
   }
 };
 
+const WEEKDAYS = ['Даваа', 'Мягмар', 'Лхагва', 'Пүрэв', 'Баасан', 'Бямба', 'Ням'];
+
 const AddJob = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -23,11 +25,28 @@ const AddJob = () => {
   const [formData, setFormData] = useState({
     title: '', category: '', employerName: '', salary: '', 
     salaryType: 'цаг', locationType: 'Зайнаас', requirements: '',
-    city: 'Улаанбаатар', district: '', khoroo: '', specificAddress: ''
+    city: 'Улаанбаатар', district: '', khoroo: '', specificAddress: '',
+    isTemporary: false,
+    tempStartDate: '', // 🔥 ШИНЭ: Эхлэх өдөр
+    tempEndDate: '',   // 🔥 ШИНЭ: Дуусах өдөр
+    isRecurring: false,  
+    recurringDays: []    
   });
 
   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
   const handleDistrictChange = (e) => setFormData({ ...formData, district: e.target.value, khoroo: '' });
+
+  const toggleRecurringDay = (day) => {
+    setFormData(prev => {
+      const isSelected = prev.recurringDays.includes(day);
+      return {
+        ...prev,
+        recurringDays: isSelected 
+          ? prev.recurringDays.filter(d => d !== day) 
+          : [...prev.recurringDays, day]
+      };
+    });
+  };
 
   const getMinSalary = (type) => {
     if (type === 'цаг') return 4000;
@@ -45,6 +64,25 @@ const AddJob = () => {
       return;
     }
 
+    if (formData.isRecurring && formData.recurringDays.length === 0) {
+      alert("Тогтмол давтамжтай ажил тул ядаж 1 гараг сонгоно уу!");
+      return;
+    }
+
+    // 🔥 ШИНЭ ЛОГИК: 2 сонгосон өдрийг нэгтгэж текст болгох
+    let finalDurationText = '';
+    if (formData.isTemporary) {
+      if (!formData.tempStartDate || !formData.tempEndDate) {
+        alert("Түр зуурын ажлын эхлэх болон дуусах өдрийг сонгоно уу.");
+        return;
+      }
+      if (formData.tempStartDate === formData.tempEndDate) {
+        finalDurationText = `${formData.tempStartDate} (1 өдөр)`;
+      } else {
+        finalDurationText = `${formData.tempStartDate} -аас ${formData.tempEndDate}`;
+      }
+    }
+
     let finalLocation = '';
     if (formData.locationType !== 'Зайнаас') {
       if (!formData.district || !formData.khoroo || !formData.specificAddress) {
@@ -54,7 +92,12 @@ const AddJob = () => {
       finalLocation = `${formData.city}, ${formData.district}, ${formData.khoroo}-р хороо, ${formData.specificAddress}`;
     }
 
-    const submitData = { ...formData, location: finalLocation };
+    // Backend рүү явуулах датагаа бэлдэх
+    const submitData = { 
+      ...formData, 
+      location: finalLocation,
+      durationText: finalDurationText // 🔥 Нэгтгэсэн текстээ Backend рүү явуулна
+    };
 
     setLoading(true);
     try {
@@ -99,41 +142,28 @@ const AddJob = () => {
                     <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Ажлын ангилал</label>
                     <select name="category" required value={formData.category} onChange={handleChange} className="w-full px-4 py-3 bg-gray-50 dark:bg-[#1a1a1a] dark:text-white border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-blue-600 outline-none cursor-pointer transition-colors">
                   <option value="" disabled>-- Ангилал сонгох --</option>
-
-                  {/* Үйлчилгээ, Худалдаа */}
                   <option value="Зөөгч, Бариста">Зөөгч, Бариста</option>
                   <option value="Касс, Худалдагч">Касс, Худалдагч</option>
                   <option value="Угтах үйлчилгээ (Ресепшн)">Угтах үйлчилгээ (Ресепшн)</option>
                   <option value="Бараа өрөгч, Агуулах">Бараа өрөгч, Агуулах</option>
                   <option value="Тогооч, Тогоочийн туслах">Тогооч, Тогоочийн туслах</option>
                   <option value="Цэвэрлэгээ, Үйлчилгээ">Цэвэрлэгээ, Үйлчилгээ</option>
-
-                  {/* Ложистик, Хүргэлт */}
                   <option value="Түгээлт, Хүргэлт">Түгээлт, Хүргэлт</option>
                   <option value="Ачигч, Хар ажил">Ачигч, Хар ажил</option>
                   <option value="Жолооч">Жолооч</option>
-
-                  {/* Оффис, Харилцаа холбоо */}
                   <option value="Мэдээлэл оруулагч (Data Entry)">Мэдээлэл оруулагч (Data Entry)</option>
                   <option value="Хэрэглэгчийн төв (Call Center)">Хэрэглэгчийн төв (Call Center)</option>
                   <option value="Орчуулга">Орчуулга</option>
-
-                  {/* Маркетинг, Борлуулалт */}
                   <option value="Промоутер, Борлуулалт">Промоутер, Борлуулалт</option>
                   <option value="Сошиал медиа хөгжүүлэлт">Сошиал медиа хөгжүүлэлт</option>
                   <option value="Маркетинг, Олон нийттэй харилцах">Маркетинг, Олон нийттэй харилцах</option>
-
-                  {/* Мэдээллийн технологи, Дизайн */}
                   <option value="Вэб болон Апп хөгжүүлэлт">Вэб болон Апп хөгжүүлэлт</option>
                   <option value="График дизайн">График дизайн</option>
                   <option value="Видео эвлүүлэг, Зураг авалт">Видео эвлүүлэг, Зураг авалт</option>
                   <option value="Мэдээллийн технологи (IT)">Мэдээллийн технологи (IT)</option>
-
-                  {/* Боловсрол, Бусад */}
                   <option value="Гэрийн багш, Сургалт">Гэрийн багш, Сургалт</option>
                   <option value="Эвэнт, Арга хэмжээний туслах">Эвэнт, Арга хэмжээний туслах</option>
                   <option value="Бусад">Бусад</option>
-                        
                     </select>
                   </div>
                   <div>
@@ -218,6 +248,93 @@ const AddJob = () => {
                   </select>
                 </div>
               </div>
+            </div>
+
+            {/* ⏱️ Түр зуурын ажил - ХУАНЛИ (CALENDAR) СОНГОЛТТОЙ БОЛСОН */}
+            <div className="p-5 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-900/50 rounded-xl transition-colors">
+              <div className="flex items-center gap-3 mb-3">
+                <input 
+                  type="checkbox" 
+                  id="isTemp"
+                  checked={formData.isTemporary} 
+                  onChange={(e) => setFormData({...formData, isTemporary: e.target.checked})} 
+                  className="w-5 h-5 text-orange-600 rounded cursor-pointer" 
+                />
+                <label htmlFor="isTemp" className="font-black text-orange-800 dark:text-orange-400 cursor-pointer">
+                   Энэ бол түр зуурын / богино хугацааны ажил (Эвэнт, 1-3 хоног г.м)
+                </label>
+              </div>
+              
+              {formData.isTemporary && (
+                <div className="mt-4 animate-in fade-in slide-in-from-top-2">
+                  <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-3">Ажиллах хугацааг сонгоно уу</label>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1">Эхлэх өдөр</label>
+                      <input 
+                        type="date" 
+                        value={formData.tempStartDate} 
+                        onChange={(e) => setFormData({...formData, tempStartDate: e.target.value})} 
+                        className="w-full px-4 py-3 bg-white dark:bg-[#1a1a1a] border border-orange-200 dark:border-orange-700/50 rounded-xl outline-none focus:ring-2 focus:ring-orange-500 dark:text-white transition-all cursor-pointer"
+                        required={formData.isTemporary}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1">Дуусах өдөр</label>
+                      <input 
+                        type="date" 
+                        value={formData.tempEndDate} 
+                        min={formData.tempStartDate} // Эхлэх өдрөөс өмнөхийг сонгуулахгүй байх хамгаалалт
+                        onChange={(e) => setFormData({...formData, tempEndDate: e.target.value})} 
+                        className="w-full px-4 py-3 bg-white dark:bg-[#1a1a1a] border border-orange-200 dark:border-orange-700/50 rounded-xl outline-none focus:ring-2 focus:ring-orange-500 dark:text-white transition-all cursor-pointer"
+                        required={formData.isTemporary}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* 🔄 Тогтмол давтамжтай ажил */}
+            <div className="p-5 bg-teal-50 dark:bg-teal-900/20 border border-teal-200 dark:border-teal-900/50 rounded-xl mb-6 transition-colors">
+              <div className="flex items-center gap-3 mb-3">
+                <input 
+                  type="checkbox" 
+                  id="isRecurr"
+                  checked={formData.isRecurring} 
+                  onChange={(e) => setFormData({...formData, isRecurring: e.target.checked})} 
+                  className="w-5 h-5 text-teal-600 rounded cursor-pointer" 
+                />
+                <label htmlFor="isRecurr" className="font-black text-teal-800 dark:text-teal-400 cursor-pointer">
+                   Энэ бол тогтмол давтамжтай ажил (7 хоногийн тодорхой өдрүүдэд)
+                </label>
+              </div>
+              
+              {formData.isRecurring && (
+                <div className="mt-4 animate-in fade-in slide-in-from-top-2">
+                  <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-3">Ажиллах гарагуудаа сонгоно уу</label>
+                  <div className="flex flex-wrap gap-2">
+                    {WEEKDAYS.map(day => {
+                      const isSelected = formData.recurringDays.includes(day);
+                      return (
+                        <button
+                          key={day}
+                          type="button"
+                          onClick={() => toggleRecurringDay(day)}
+                          className={`px-4 py-2 rounded-lg text-sm font-bold transition-all border ${
+                            isSelected 
+                              ? 'bg-teal-600 text-white border-teal-600 shadow-md' 
+                              : 'bg-white dark:bg-[#1a1a1a] text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:border-teal-400'
+                          }`}
+                        >
+                          {isSelected ? '✓ ' : ''}{day}
+                        </button>
+                      )
+                    })}
+                  </div>
+                  {formData.recurringDays.length === 0 && <p className="text-xs text-red-500 mt-2 font-bold">Ядаж 1 гараг сонгоно уу!</p>}
+                </div>
+              )}
             </div>
 
             <div className="pt-6 border-t border-gray-100 dark:border-gray-800 flex justify-end">

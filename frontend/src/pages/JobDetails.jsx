@@ -16,7 +16,7 @@ const JobDetails = () => {
   const [averageRating, setAverageRating] = useState(0);
   const [totalReviews, setTotalReviews] = useState(0);
 
-  // 🔥 ШИНЭ: Компанийн профайл модал харуулах State
+  // Компанийн профайл модал харуулах State
   const [selectedEmployer, setSelectedEmployer] = useState(null);
   const [loadingEmployer, setLoadingEmployer] = useState(false);
 
@@ -43,7 +43,7 @@ const JobDetails = () => {
     }
   };
 
-  // 🔥 ШИНЭ: Ажил олгогчийн профайлыг татаж модал дээр харуулах функц
+  // Ажил олгогчийн профайлыг татаж модал дээр харуулах функц
   const handleViewEmployerProfile = async () => {
     setLoadingEmployer(true);
     try {
@@ -116,9 +116,26 @@ const JobDetails = () => {
           <div className="flex flex-col md:flex-row justify-between items-start gap-6 mb-10">
             <div>
               <h1 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-4 transition-colors">{job.title}</h1>
+              
+              {/* 🔥 Түр зуурын болон Давтамжтай ажлын Badge-ууд */}
+              <div className="flex flex-wrap gap-3 mb-6">
+                {job.isTemporary && (
+                  <div className="inline-flex items-center gap-2 bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 px-3.5 py-1.5 rounded-lg text-sm font-bold border border-orange-200/50 dark:border-orange-800/50">
+                    <span className="text-sm">⏱️</span> 
+                    <span>{job.durationText}</span>
+                  </div>
+                )}
+                {job.isRecurring && job.recurringDays && job.recurringDays.length > 0 && (
+                  <div className="inline-flex items-center gap-2 bg-teal-50 dark:bg-teal-900/20 text-teal-600 dark:text-teal-400 px-3.5 py-1.5 rounded-lg text-sm font-bold border border-teal-200/50 dark:border-teal-800/50">
+                    <span className="text-sm">🔄</span> 
+                    <span>Гараг бүрийн: {job.recurringDays.join(', ')}</span>
+                  </div>
+                )}
+              </div>
+
               <div className="flex flex-wrap items-center gap-4">
                 
-                {/* 🔥 ШИНЭЧЛЭГДСЭН: Байгууллагын нэрэн дээр дарахад профайл харагдана */}
+                {/* Байгууллагын нэрэн дээр дарахад профайл харагдана */}
                 <button 
                   onClick={handleViewEmployerProfile} 
                   disabled={loadingEmployer}
@@ -224,7 +241,7 @@ const JobDetails = () => {
 
       </div>
 
-      {/* 🔥 ШИНЭ: КОМПАНИЙН ПРОФАЙЛ ХАРАХ МОДАЛ */}
+      {/* КОМПАНИЙН ПРОФАЙЛ ХАРАХ МОДАЛ */}
       {selectedEmployer && (
         <div className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50 overflow-y-auto">
           <div className="bg-white dark:bg-[#111111] rounded-3xl w-full max-w-4xl shadow-2xl my-8 relative overflow-hidden flex flex-col max-h-[90vh] transition-colors duration-300 border dark:border-gray-800">
