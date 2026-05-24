@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
+import Swal from 'sweetalert2';
 
 const JobDetails = () => {
   const { id } = useParams();
@@ -66,13 +67,25 @@ const JobDetails = () => {
 
   const handleApply = async () => {
     if (!user) {
-      alert("Та эхлээд нэвтэрсэн байх шаардлагатай.");
+      Swal.fire({
+        title: 'Нэвтрэх шаардлагатай!',
+        text: 'Та эхлээд нэвтэрсэн байх шаардлагатай.',
+        icon: 'warning',
+        confirmButtonText: 'Ойлголоо',
+        confirmButtonColor: '#3b82f6' // Цэнхэр өнгө
+      });
       navigate('/login');
       return;
     }
     
     if (user.role === 'employer') {
-      alert("Ажил олгогч ажилд орох хүсэлт илгээх боломжгүй.");
+      Swal.fire({
+        title: 'Уучлаарай',
+        text: 'Ажил олгогч ажилд орох хүсэлт илгээх боломжгүй.',
+        icon: 'error',
+        confirmButtonText: 'Хаах',
+        confirmButtonColor: '#ef4444' // Улаан өнгө
+      });
       return;
     }
     
@@ -91,11 +104,26 @@ const JobDetails = () => {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       
-      alert("Ажилд орох хүсэлт амжилттай илгээгдлээ!");
-      navigate('/my-applications');
+      // 🔥 АМЖИЛТТАЙ БОЛСОН ГОЁ POP-UP
+      Swal.fire({
+        title: 'Амжилттай!',
+        text: 'Ажилд орох хүсэлт амжилттай илгээгдлээ!',
+        icon: 'success',
+        confirmButtonText: 'Гайхалтай',
+        confirmButtonColor: '#10b981' // Ногоон өнгө
+      }).then(() => {
+        navigate('/my-applications');
+      });
+
     } catch (error) {
       console.error(error);
-      alert(error.response?.data?.message || "Хүсэлт илгээхэд алдаа гарлаа.");
+      Swal.fire({
+        title: 'Алдаа гарлаа',
+        text: error.response?.data?.message || "Хүсэлт илгээхэд алдаа гарлаа.",
+        icon: 'error',
+        confirmButtonText: 'Хаах',
+        confirmButtonColor: '#ef4444'
+      });
     }
   };
 
@@ -239,7 +267,20 @@ const JobDetails = () => {
           )}
         </div>
 
+ 
       </div>
+      {/* Цагийн хуваарийн гоё баннер */}
+{job.workingHours && (
+  <div className="mb-6 flex items-center gap-4 bg-blue-50 dark:bg-blue-900/10 p-5 rounded-2xl border border-blue-100 dark:border-blue-900/30 transition-colors">
+    <div className="w-12 h-12 flex items-center justify-center bg-white dark:bg-[#1a1a1a] rounded-xl shadow-sm text-2xl">
+      🕒
+    </div>
+    <div>
+      <div className="text-blue-800/60 dark:text-blue-400/60 text-[11px] font-black uppercase tracking-widest mb-1">Ажиллах цагийн хуваарь</div>
+      <div className="font-black text-lg text-blue-900 dark:text-blue-300">{job.workingHours}</div>
+    </div>
+  </div>
+)}
 
       {/* КОМПАНИЙН ПРОФАЙЛ ХАРАХ МОДАЛ */}
       {selectedEmployer && (

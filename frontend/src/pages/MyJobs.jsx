@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
+import Swal from 'sweetalert2'; // 🔥 ШИНЭ: SweetAlert2 импортлох
 
 const LOCATION_DATA = {
   "Улаанбаатар": {
@@ -47,15 +48,28 @@ const MyJobs = () => {
     if (user) fetchMyJobs();
   }, [user]);
 
+  // 🔥 ШИНЭЧЛЭГДСЭН: Зар устгах хэсэг
   const handleDelete = async (id) => {
-    if (window.confirm("Энэхүү зарыг устгахдаа итгэлтэй байна уу?")) {
+    const result = await Swal.fire({
+      title: 'Устгахдаа итгэлтэй байна уу?',
+      text: "Энэхүү зарыг устгавал буцаах боломжгүй!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Тийм, устгая',
+      cancelButtonText: 'Болих'
+    });
+
+    if (result.isConfirmed) {
       try {
         await axios.delete(`http://localhost:5000/api/jobs/${id}`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         });
         setMyJobs(myJobs.filter(job => job._id !== id));
+        Swal.fire('Устгагдлаа!', 'Таны зар амжилттай устгагдлаа.', 'success');
       } catch (error) {
-        alert("Устгахад алдаа гарлаа.");
+        Swal.fire('Алдаа!', 'Устгахад алдаа гарлаа.', 'error');
       }
     }
   };
@@ -95,7 +109,7 @@ const MyJobs = () => {
     let finalLocation = '';
     if (editFormData.locationType !== 'Зайнаас') {
       if (!editFormData.district || !editFormData.khoroo || !editFormData.specificAddress) {
-        alert("Байршлын мэдээллийг гүйцэд оруулна уу.");
+        Swal.fire('Мэдээлэл дутуу', 'Байршлын мэдээллийг гүйцэд оруулна уу.', 'warning');
         return;
       }
       finalLocation = `${editFormData.city}, ${editFormData.district}, ${editFormData.khoroo}-р хороо, ${editFormData.specificAddress}`;
@@ -109,11 +123,11 @@ const MyJobs = () => {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       setMyJobs(myJobs.map(job => job._id === editFormData._id ? response.data : job));
-      alert("Амжилттай засагдлаа!");
+      Swal.fire('Амжилттай!', 'Амжилттай засагдлаа!', 'success');
       setIsEditModalOpen(false);
     } catch (error) {
       console.error(error);
-      alert("Засахад алдаа гарлаа.");
+      Swal.fire('Алдаа!', 'Засахад алдаа гарлаа.', 'error');
     } finally {
       setUpdating(false);
     }
@@ -140,9 +154,22 @@ const MyJobs = () => {
     }
   };
 
+  // 🔥 ШИНЭЧЛЭГДСЭН: Хүсэлт батлах эсвэл татгалзах үеийн Pop-up
   const handleUpdateStatus = async (appId, newStatus) => {
-    const confirmMsg = newStatus === 'accepted' ? "Ажилд авах уу?" : "Татгалзах уу?";
-    if (window.confirm(confirmMsg)) {
+    const isAccepted = newStatus === 'accepted';
+    
+    const result = await Swal.fire({
+      title: isAccepted ? 'Ажилд авах уу?' : 'Татгалзах уу?',
+      text: isAccepted ? "Энэхүү хүнийг ажилд авахаар баталгаажуулах уу?" : "Энэхүү анкетыг буцаахдаа итгэлтэй байна уу?",
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: isAccepted ? '#10b981' : '#ef4444',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: isAccepted ? 'Тийм, ажилд авах' : 'Тийм, татгалзах',
+      cancelButtonText: 'Болих'
+    });
+
+    if (result.isConfirmed) {
       try {
         await axios.put(`http://localhost:5000/api/applications/${appId}/status`, { status: newStatus },
           { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
@@ -152,8 +179,10 @@ const MyJobs = () => {
         if (selectedAppCV && selectedAppCV._id === appId) {
           setSelectedAppCV({ ...selectedAppCV, status: newStatus });
         }
+        Swal.fire('Амжилттай!', isAccepted ? 'Ажилд авлаа!' : 'Анкетыг буцаалаа.', 'success');
       } catch (error) {
         console.error(error);
+        Swal.fire('Алдаа!', 'Үйлдэл хийхэд алдаа гарлаа.', 'error');
       }
     }
   };
@@ -215,7 +244,7 @@ const MyJobs = () => {
                   <div className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-800 animate-in fade-in slide-in-from-top-4 transition-colors">
                     <h4 className="font-black text-gray-900 dark:text-white mb-6 flex items-center gap-2 transition-colors">
                       <span className="bg-blue-600 dark:bg-blue-500 w-2 h-6 rounded-full"></span>
-                      Ирсэн хүсэлтүүд ({applications.length})
+                      Ирсэн хүсэлтүү ({applications.length})
                     </h4>
                     
                     {applications.length === 0 ? (
@@ -284,9 +313,6 @@ const MyJobs = () => {
         </div>
       </div>
 
-      {/* =========================================
-          🔥 ШИНЭ: ДЭЛГЭРЭНГҮЙ CV & ҮНЭЛГЭЭНИЙ МОДАЛ
-          ========================================= */}
       {selectedAppCV && (
         <div className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50 overflow-y-auto">
           <div className="bg-white dark:bg-[#111111] rounded-3xl w-full max-w-4xl shadow-2xl my-8 relative overflow-hidden flex flex-col max-h-[90vh] transition-colors duration-300 border dark:border-gray-800">

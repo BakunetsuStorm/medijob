@@ -6,8 +6,8 @@ const JWT_SECRET = "MediJobSuperSecretKey2026";
 
 const registerUser = async (req, res) => {
   try {
-    // 🔥 ЗАСВАР: Frontend-ээс илгээсэн шинэ талбаруудыг хүлээж авах
-    const { name, email, password, role, professions, companyRegNumber, companyIndustry } = req.body;
+    // ЗАСВАР: age талбарыг нэмж хүлээж авна
+    const { name, email, password, role, professions, companyRegNumber, companyIndustry, age } = req.body;
     
     const userExists = await User.findOne({ email });
     if (userExists) return res.status(400).json({ message: 'Энэ и-мэйл хаяг бүртгэлтэй байна!' });
@@ -15,7 +15,7 @@ const registerUser = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // 🔥 ЗАСВАР: Бааз руу хадгалахдаа шинэ талбаруудыг хамт өгнө
+    // ЗАСВАР: Бааз руу age-ийг хадгална
     await User.create({ 
       name, 
       email, 
@@ -23,7 +23,8 @@ const registerUser = async (req, res) => {
       role,
       professions: role === 'worker' ? professions : [],
       companyRegNumber: role === 'employer' ? companyRegNumber : '',
-      companyIndustry: role === 'employer' ? companyIndustry : ''
+      companyIndustry: role === 'employer' ? companyIndustry : '',
+      age: role === 'worker' ? age : null
     });
     
     res.status(201).json({ message: 'Амжилттай бүртгүүллээ!' });

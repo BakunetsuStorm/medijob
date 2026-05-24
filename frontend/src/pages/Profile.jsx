@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
+import toast from 'react-hot-toast'; // 🔥 ШИНЭ: Toast импортлох
 
 const Profile = () => {
   const { user, login } = useContext(AuthContext);
@@ -80,7 +81,7 @@ const Profile = () => {
     const file = e.target.files[0];
     if (file) {
       if (file.size > 2 * 1024 * 1024) { 
-        alert("Зурагны хэмжээ 2MB-аас бага байх ёстой.");
+        toast.error("Зурагны хэмжээ 2MB-аас бага байх ёстой."); // 🔥 ШИНЭЧЛЭЛТ
         return;
       }
       const reader = new FileReader();
@@ -97,7 +98,7 @@ const Profile = () => {
 
   const addExperienceToList = () => {
     if (!newExperience.title || !newExperience.company) {
-      alert("Албан тушаал болон Компанийн нэрийг заавал оруулна уу.");
+      toast.error("Албан тушаал болон Компанийн нэрийг заавал оруулна уу."); // 🔥 ШИНЭЧЛЭЛТ
       return;
     }
     setProfileData({
@@ -133,11 +134,11 @@ const Profile = () => {
       });
       const updatedUser = { ...user, ...res.data };
       login(updatedUser); 
-      alert('Профайл амжилттай шинэчлэгдлээ!');
+      toast.success('Профайл амжилттай шинэчлэгдлээ!'); // 🔥 ШИНЭЧЛЭЛТ
       setIsEditing(false); 
     } catch (error) {
       console.error(error);
-      alert('Хадгалахад алдаа гарлаа.');
+      toast.error('Хадгалахад алдаа гарлаа.'); // 🔥 ШИНЭЧЛЭЛТ
     } finally {
       setSaving(false);
     }
@@ -146,12 +147,10 @@ const Profile = () => {
   const isEmployer = user?.role === 'employer';
 
   return (
-    // 🔥 ШИНЭЧЛЭЛТ: dark:bg-[#0a0a0a] нэмэгдсэн
     <div className="min-h-screen bg-gray-50 dark:bg-[#0a0a0a] py-12 px-4 sm:px-6 transition-colors duration-300">
       <div className="max-w-5xl mx-auto space-y-8">
         
         {/* ХЭРЭГЛЭГЧИЙН ЕРӨНХИЙ МЭДЭЭЛЭЛ */}
-        {/* 🔥 ШИНЭЧЛЭЛТ: dark:bg-[#111111] dark:border-gray-800 */}
         <div className="bg-white dark:bg-[#111111] rounded-3xl p-8 shadow-sm border border-gray-100 dark:border-gray-800 flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden transition-colors duration-300">
           <div className={`absolute top-0 right-0 w-64 h-64 rounded-bl-full -mr-10 -mt-10 z-0 pointer-events-none ${isEmployer ? 'bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20' : 'bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20'}`}></div>
           
@@ -175,7 +174,6 @@ const Profile = () => {
             </div>
 
             <div>
-              {/* 🔥 ШИНЭЧЛЭЛТ: dark:text-white */}
               <h1 className="text-3xl font-black text-gray-900 dark:text-white mb-1 transition-colors">{user?.name}</h1>
               <div className="flex items-center gap-3">
                 <span className="text-gray-500 dark:text-gray-400 font-medium transition-colors">{user?.email}</span>
@@ -213,7 +211,6 @@ const Profile = () => {
                 <div>
                   <label className="block text-sm font-bold text-gray-400 uppercase tracking-wider mb-1">Утасны дугаар</label>
                   {isEditing ? (
-                    // 🔥 ШИНЭЧЛЭЛТ: dark:bg-[#1a1a1a] dark:text-white dark:border-gray-700
                     <input type="text" name="phone" value={profileData.phone} onChange={handleInputChange} placeholder="Жнь: 99112233" className="w-full px-4 py-3 bg-gray-50 dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-700 rounded-xl font-medium focus:ring-2 focus:ring-blue-600 dark:text-white outline-none transition-all" />
                   ) : (
                     <p className="text-gray-900 dark:text-white font-bold text-lg transition-colors">{profileData.phone || <span className="text-gray-400 text-sm font-normal">Оруулаагүй байна</span>}</p>

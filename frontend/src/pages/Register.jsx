@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+import toast from 'react-hot-toast';
 
 const Register = () => {
   const navigate = useNavigate();
@@ -12,6 +13,7 @@ const Register = () => {
     professions: [], 
     companyRegNumber: "", 
     companyIndustry: "",  
+    birthYear: "" // ШИНЭ: Төрсөн он
   });
 
   const availableProfessions = [
@@ -53,20 +55,38 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post("http://localhost:5000/api/auth/register", formData);
-      alert("Амжилттай бүртгүүллээ! Одоо нэвтэрч орно уу.");
+      const currentYear = new Date().getFullYear();
+      let calculatedAge = null;
+      
+      // Ажил хайгч бол насыг нь бодох логик
+      if (formData.role === "worker") {
+        if (!formData.birthYear || formData.birthYear < 1950 || formData.birthYear > currentYear - 14) {
+          toast.error("Төрсөн оноо зөв оруулна уу (14-өөс дээш настай байх шаардлагатай).");
+          return;
+        }
+        calculatedAge = currentYear - Number(formData.birthYear);
+      }
+
+      // Backend рүү шидэх дата
+      const submitData = {
+        ...formData,
+        age: calculatedAge
+      };
+
+      await axios.post("http://localhost:5000/api/auth/register", submitData);
+      
+      toast.success("Амжилттай бүртгүүллээ! Одоо нэвтэрч орно уу.");
       navigate("/login"); 
     } catch (error) {
       console.error("Бүртгэхэд алдаа гарлаа:", error);
-      alert(error.response?.data?.message || "Алдаа гарлаа");
+      toast.error(error.response?.data?.message || "Бүртгүүлэхэд алдаа гарлаа");
     }
   };
 
   return (
-    // 🔥 ШИНЭЧЛЭЛТ: dark:bg-[#0a0a0a] нэмэгдсэн
     <div className="min-h-screen flex w-full transition-colors duration-300 dark:bg-[#0a0a0a]">
       
-      {/* 1. Left Side */}
+      {/* Left Side */}
       <div className="hidden lg:flex lg:w-1/2 relative bg-blue-600 overflow-hidden items-center justify-center">
         <div className="absolute inset-0 bg-gradient-to-br from-blue-600 to-indigo-900"></div>
         <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '32px 32px' }}></div>
@@ -87,8 +107,7 @@ const Register = () => {
         </div>
       </div>
 
-      {/* 2. Right Side - Form */}
-      {/* 🔥 ШИНЭЧЛЭЛТ: dark:bg-[#0a0a0a] нэмэгдсэн */}
+      {/* Right Side - Form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center bg-gray-50 dark:bg-[#0a0a0a] px-6 py-12 relative overflow-y-auto transition-colors duration-300">
         <Link to="/" className="absolute top-8 left-6 lg:hidden text-gray-400 hover:text-gray-900 dark:hover:text-white font-medium transition-colors">
           ← Буцах
@@ -119,7 +138,7 @@ const Register = () => {
                   >Ажил хайгч</button>
                   <button
                     type="button"
-                    onClick={() => setFormData({ ...formData, role: "employer", professions: [] })}
+                    onClick={() => setFormData({ ...formData, role: "employer", professions: [], birthYear: "" })}
                     className={`py-3 px-4 rounded-xl text-sm font-bold transition-all border ${
                       formData.role === "employer" 
                         ? "bg-blue-50 dark:bg-blue-900/30 border-blue-600 text-blue-700 dark:text-blue-400 ring-1 ring-blue-600 shadow-sm" 
@@ -130,26 +149,32 @@ const Register = () => {
               </div>
 
               {formData.role === "worker" && (
-                <div className="animate-in fade-in slide-in-from-top-2">
-                  <label className="block text-sm font-bold text-gray-900 dark:text-gray-300 mb-2 transition-colors">Мэргэжил / Чиглэлээ сонгоно уу</label>
-                  <div className="flex flex-wrap gap-2">
-                    {availableProfessions.map((prof, idx) => {
-                      const isSelected = formData.professions.includes(prof);
-                      return (
-                        <button 
-                          key={idx} 
-                          type="button" 
-                          onClick={() => toggleProfession(prof)} 
-                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${
-                            isSelected 
-                              ? 'bg-blue-600 border-blue-600 text-white shadow-md' 
-                              : 'bg-gray-50 dark:bg-[#1a1a1a] border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-gray-400 dark:hover:border-gray-500 hover:text-gray-900 dark:hover:text-white'
-                          }`}
-                        >
-                          {isSelected ? '✓ ' : ''}{prof}
-                        </button>
-                      );
-                    })}
+                <div className="space-y-6 animate-in fade-in slide-in-from-top-2">
+                  <div>
+                    <label className="block text-sm font-bold text-gray-900 dark:text-gray-300 mb-2 transition-colors">Төрсөн он</label>
+                    <input type="number" name="birthYear" value={formData.birthYear} placeholder="Жнь: 2004" required onChange={handleChange} className="block w-full px-4 py-3.5 bg-gray-50 dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white font-medium focus:bg-white dark:focus:bg-[#222222] focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all sm:text-sm" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-gray-900 dark:text-gray-300 mb-2 transition-colors">Мэргэжил / Чиглэлээ сонгоно уу</label>
+                    <div className="flex flex-wrap gap-2">
+                      {availableProfessions.map((prof, idx) => {
+                        const isSelected = formData.professions.includes(prof);
+                        return (
+                          <button 
+                            key={idx} 
+                            type="button" 
+                            onClick={() => toggleProfession(prof)} 
+                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${
+                              isSelected 
+                                ? 'bg-blue-600 border-blue-600 text-white shadow-md' 
+                                : 'bg-gray-50 dark:bg-[#1a1a1a] border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-gray-400 dark:hover:border-gray-500 hover:text-gray-900 dark:hover:text-white'
+                            }`}
+                          >
+                            {isSelected ? '✓ ' : ''}{prof}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
               )}
@@ -187,7 +212,7 @@ const Register = () => {
                 <input type="password" name="password" placeholder="Хамгийн багадаа 8 тэмдэгт" required onChange={handleChange} className="block w-full px-4 py-3.5 bg-gray-50 dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white font-medium placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-[#222222] focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all sm:text-sm" />
               </div>
 
-              <button type="submit" disabled={formData.role === 'worker' && formData.professions.length === 0} className="w-full flex justify-center mt-2 py-4 px-4 rounded-xl shadow-lg shadow-blue-600/20 dark:shadow-none text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:dark:bg-gray-600 disabled:shadow-none focus:outline-none transition-all hover:-translate-y-0.5">
+              <button type="submit" disabled={formData.role === 'worker' && (!formData.birthYear || formData.professions.length === 0)} className="w-full flex justify-center mt-2 py-4 px-4 rounded-xl shadow-lg shadow-blue-600/20 dark:shadow-none text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:dark:bg-gray-600 disabled:shadow-none focus:outline-none transition-all hover:-translate-y-0.5">
                 Бүртгэл үүсгэх
               </button>
             </form>

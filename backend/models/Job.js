@@ -12,13 +12,17 @@ const jobSchema = new mongoose.Schema({
   locationType: { type: String, enum: ['Зайнаас', 'Оффис', 'Холимог'], default: 'Зайнаас' },
   location: { type: String, default: '' }, 
   
-  // 🔥 ШИНЭ: Түр зуурын ажил
+  // Түр зуурын ажил
   isTemporary: { type: Boolean, default: false },
   durationText: { type: String, default: '' },
+  tempEndDate: { type: Date },
   
-  // 🔥 ШИНЭ: Тогтмол давтамжтай ажил
+  // Тогтмол давтамжтай ажил
   isRecurring: { type: Boolean, default: false },
   recurringDays: { type: [String], default: [] }, // Жнь: ['Даваа', 'Лхагва']
+
+  // Цагийн хуваарь
+  workingHours: { type: String, default: '' },
 
   requirements: { type: String, required: false },
   rating: { type: Number, default: 0 },

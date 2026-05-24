@@ -10,10 +10,13 @@ import AdminDashboard from './pages/AdminDashboard';
 import Profile from './pages/Profile';
 import MyApplications from './pages/MyApplications';
 import MyWorkers from './pages/MyWorkers';
+import { Toaster } from 'react-hot-toast';
 
 function App() {
   return (
     <Router>
+      <Toaster position="top-right" />
+      
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/add-job" element={<AddJob />} />

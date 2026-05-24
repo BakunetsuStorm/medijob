@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
+import Swal from 'sweetalert2'; // 🔥 ШИНЭ: SweetAlert2 импортлох
 
 const MyWorkers = () => {
   const { user } = useContext(AuthContext);
@@ -27,17 +28,29 @@ const MyWorkers = () => {
     }
   };
 
+  // 🔥 ШИНЭЧЛЭГДСЭН: Ажил дуусгах хэсэг
   const handleCompleteJob = async (appId) => {
-    if(window.confirm("Энэхүү ажлыг дууссан гэж тэмдэглэх үү? Ажилтны CV-д автоматаар нэмэгдэх болно.")) {
+    const result = await Swal.fire({
+      title: 'Ажил дууссан уу?',
+      text: "Энэхүү ажлыг дууссан гэж тэмдэглэх үү? Ажилтны CV-д автоматаар нэмэгдэх болно.",
+      icon: 'info',
+      showCancelButton: true,
+      confirmButtonColor: '#10b981',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Тийм, дуусгах',
+      cancelButtonText: 'Болих'
+    });
+
+    if (result.isConfirmed) {
       try {
         await axios.put(`http://localhost:5000/api/applications/${appId}/status`, 
           { status: 'completed' },
           { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
         );
-        alert(" Ажил амжилттай дууслаа!");
+        Swal.fire('Амжилттай!', 'Ажил амжилттай дууслаа!', 'success');
         fetchMyWorkers(); 
       } catch (error) {
-        alert("Алдаа гарлаа");
+        Swal.fire('Алдаа!', 'Алдаа гарлаа', 'error');
       }
     }
   };
@@ -47,6 +60,7 @@ const MyWorkers = () => {
     setIsModalOpen(true);
   };
 
+  // 🔥 ШИНЭЧЛЭГДСЭН: Үнэлгээ өгөх хэсэг
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
     setSubmittingReview(true);
@@ -54,10 +68,10 @@ const MyWorkers = () => {
       await axios.post('http://localhost:5000/api/reviews', reviewData, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
-      alert(' Үнэлгээ амжилттай хадгалагдлаа!');
+      Swal.fire('Амжилттай!', 'Үнэлгээ амжилттай хадгалагдлаа!', 'success');
       setIsModalOpen(false);
     } catch (error) {
-      alert('Үнэлгээ өгөхөд алдаа гарлаа.');
+      Swal.fire('Алдаа!', 'Үнэлгээ өгөхөд алдаа гарлаа.', 'error');
     } finally {
       setSubmittingReview(false);
     }

@@ -2,6 +2,7 @@ import React, { useState, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
+import toast from 'react-hot-toast'; // 🔥 ШИНЭ: Toast импортлох
 
 const Login = () => {
   const navigate = useNavigate();
@@ -26,9 +27,10 @@ const Login = () => {
       // Амжилттай болбол AuthContext руу датаг хадгалах
       login(response.data); 
       
-      alert(`Тавтай морил, ${response.data.name}!`);
+      // 🔥 ШИНЭ: Амжилттай нэвтэрсэн үеийн Toast
+      toast.success(`Тавтай морил, ${response.data.name}!`);
       
-      // 🔥 ШИНЭЧЛЭЛТ: Хэрэв админ бол шууд Админ самбар руу шиднэ
+      // Хэрэв админ бол шууд Админ самбар руу шиднэ
       if (response.data.role === 'admin') {
         navigate("/admin");
       } else {
@@ -39,11 +41,11 @@ const Login = () => {
       console.error("Нэвтрэхэд алдаа:", error);
       // Backend-ээс ирсэн алдааг дэлгэцэнд харуулах
       setErrorMsg(error.response?.data?.message || "И-мэйл эсвэл нууц үг буруу байна.");
+      toast.error("Нэвтрэхэд алдаа гарлаа."); // 🔥 ШИНЭ: Алдааны Toast
     }
   };
 
   return (
-    // 🔥 ШИНЭЧЛЭЛТ: dark:bg-[#0a0a0a] нэмэгдсэн
     <div className="min-h-screen flex w-full transition-colors duration-300 dark:bg-[#0a0a0a]">
       
       {/* 1. Left Side (Зөвхөн том дэлгэц дээр харагдана) */}
@@ -65,7 +67,6 @@ const Login = () => {
       </div>
 
       {/* 2. Right Side - Form */}
-      {/* 🔥 ШИНЭЧЛЭЛТ: dark:bg-[#0a0a0a] нэмэгдсэн */}
       <div className="w-full lg:w-1/2 flex items-center justify-center bg-gray-50 dark:bg-[#0a0a0a] px-6 py-12 relative overflow-y-auto transition-colors duration-300">
         <Link to="/" className="absolute top-8 left-6 lg:hidden text-gray-400 hover:text-gray-900 dark:hover:text-white font-medium transition-colors">
           ← Буцах
