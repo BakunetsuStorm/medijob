@@ -23,8 +23,8 @@ const AddJob = () => {
     city: 'Улаанбаатар', district: '', khoroo: '', specificAddress: '',
     isTemporary: false, tempStartDate: '', tempEndDate: '',
     isRecurring: false, recurringDays: [],
-    // 🔥 ШИНЭ: Цагийн хуваарийн мэдээлэл
-    isFlexibleTime: false, startTime: '', endTime: ''
+    isFlexibleTime: false, startTime: '', endTime: '',
+    workersNeeded: 1 // 🔥 ШИНЭ: Авах хүний тоо
   });
 
   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -67,7 +67,7 @@ const AddJob = () => {
     let finalDurationText = '';
     if (formData.isTemporary) {
       if (!formData.tempStartDate || !formData.tempEndDate) {
-        Swal.fire({ title: 'Хуагцаа дутуу', text: 'Түр зуурын ажлын эхлэх болон дуусах өдрийг сонгоно уу.', icon: 'warning', confirmButtonColor: '#f59e0b' });
+        Swal.fire({ title: 'Хугацаа дутуу', text: 'Түр зуурын ажлын эхлэх болон дуусах өдрийг сонгоно уу.', icon: 'warning', confirmButtonColor: '#f59e0b' });
         return;
       }
       if (formData.tempStartDate === formData.tempEndDate) {
@@ -86,7 +86,6 @@ const AddJob = () => {
       finalLocation = `${formData.city}, ${formData.district}, ${formData.khoroo}-р хороо, ${formData.specificAddress}`;
     }
 
-    // 🔥 ШИНЭ: Цагийн хуваарийг нэгтгэх
     let finalWorkingHours = '';
     if (formData.isFlexibleTime) {
       finalWorkingHours = 'Уян хатан (Тохиролцох боломжтой)';
@@ -98,7 +97,7 @@ const AddJob = () => {
       ...formData, 
       location: finalLocation,
       durationText: finalDurationText,
-      workingHours: finalWorkingHours // Бааз руу шидэх хэсэг
+      workingHours: finalWorkingHours
     };
 
     setLoading(true);
@@ -138,7 +137,9 @@ const AddJob = () => {
                   <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Ажлын гарчиг</label>
                   <input type="text" name="title" required value={formData.title} onChange={handleChange} placeholder="Жнь: Ахлах вэб хөгжүүлэгч" className="w-full px-4 py-3 bg-gray-50 dark:bg-[#1a1a1a] dark:text-white border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-blue-600 outline-none transition-colors" />
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                
+                {/* 🔥 ШИНЭЧЛЭЛТ: 3 баганатай болгосон */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                   <div>
                     <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Ажлын ангилал</label>
                     <select name="category" required value={formData.category} onChange={handleChange} className="w-full px-4 py-3 bg-gray-50 dark:bg-[#1a1a1a] dark:text-white border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-blue-600 outline-none cursor-pointer transition-colors">
@@ -170,6 +171,21 @@ const AddJob = () => {
                   <div>
                     <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Ажил олгогчийн нэр</label>
                     <input type="text" name="employerName" required value={formData.employerName} onChange={handleChange} placeholder="Жнь: Tech ХХК" className="w-full px-4 py-3 bg-gray-50 dark:bg-[#1a1a1a] dark:text-white border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-blue-600 outline-none transition-colors" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Авах хүний тоо</label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-xl">👥</div>
+                      <input 
+                        type="number" 
+                        name="workersNeeded" 
+                        min="1"
+                        required 
+                        value={formData.workersNeeded} 
+                        onChange={handleChange} 
+                        className="w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-[#1a1a1a] dark:text-white border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-blue-600 outline-none transition-colors font-bold" 
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -251,7 +267,7 @@ const AddJob = () => {
               </div>
             </div>
 
-            {/* 🔥 4. ШИНЭ ЦАГИЙН ХУВААРЬ ХЭСЭГ */}
+            {/* 4. ЦАГИЙН ХУВААРЬ */}
             <div>
               <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-5 border-b border-gray-100 dark:border-gray-800 pb-2">Цагийн хуваарь</h3>
               
@@ -274,7 +290,7 @@ const AddJob = () => {
                     <div>
                       <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-2">Эхлэх цаг</label>
                       <div className="relative">
-                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-xl"></div>
+                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-xl">🌅</div>
                         <input 
                           type="time" 
                           name="startTime"
@@ -288,7 +304,7 @@ const AddJob = () => {
                     <div>
                       <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-2">Дуусах цаг</label>
                       <div className="relative">
-                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-xl"></div>
+                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-xl">🌆</div>
                         <input 
                           type="time" 
                           name="endTime"

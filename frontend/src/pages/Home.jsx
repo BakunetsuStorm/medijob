@@ -33,10 +33,12 @@ const Home = () => {
   const [matchMySkills, setMatchMySkills] = useState(false);
   const [minRating, setMinRating] = useState(0); 
   
-  // 🔥 ШИНЭЧЛЭГДСЭН: 3 төрлийн Checkbox шүүлтүүр
+  // 🔥 ШИНЭЧЛЭЛТ: Ээлжийн шүүлтүүр
+  const [filterShift, setFilterShift] = useState("Бүгд"); 
+
   const [onlyTemporary, setOnlyTemporary] = useState(false);
   const [onlyRecurring, setOnlyRecurring] = useState(false);
-  const [onlyFlexible, setOnlyFlexible] = useState(false); // ✨ ШИНЭ: Уян хатан цаг
+  const [onlyFlexible, setOnlyFlexible] = useState(false); 
 
   const categories = ['Бүгд', 'Вэб хөгжүүлэлт', 'График дизайн', 'Орчуулга', 'Маркетинг', 'Мэдээллийн технологи (IT)', 'Бусад'];
 
@@ -65,12 +67,27 @@ const Home = () => {
     const jobRating = job.rating || 0;
     const matchRatingValue = jobRating >= minRating; 
 
-    // 🔥 Checkbox-уудын логик
     const matchTemporary = onlyTemporary ? job.isTemporary === true : true;
     const matchRecurring = onlyRecurring ? job.isRecurring === true : true;
-    
-    // ✨ ШИНЭ: Уян хатан цагтай эсэхийг шүүх
     const matchFlexible = onlyFlexible ? (job.workingHours && job.workingHours.includes('Уян хатан')) : true;
+
+    // 🔥 ШИНЭ: Ээлжээр шүүх логик
+    let matchShift = true;
+    if (filterShift !== "Бүгд") {
+      if (!job.startTime) {
+        // Уян хатан цагтай зарууд эхлэх цаггүй байдаг тул ээлжийн шүүлтүүрт орохгүй
+        matchShift = false; 
+      } else {
+        const hour = parseInt(job.startTime.split(':')[0], 10);
+        if (filterShift === "Өглөөний ээлж") {
+          matchShift = hour >= 6 && hour < 14; // 06:00 - 13:59
+        } else if (filterShift === "Өдрийн ээлж") {
+          matchShift = hour >= 14 && hour < 18; // 14:00 - 17:59
+        } else if (filterShift === "Оройн ээлж") {
+          matchShift = hour >= 18 || hour < 6;  // 18:00 - 05:59
+        }
+      }
+    }
 
     let isSkillMatch = true;
     if (matchMySkills && user && user.role === 'worker') {
@@ -81,7 +98,7 @@ const Home = () => {
       }
     }
 
-    return matchText && matchCategory && matchWorkType && matchLocation && matchSalary && isSkillMatch && matchRatingValue && matchTemporary && matchRecurring && matchFlexible;
+    return matchText && matchCategory && matchWorkType && matchLocation && matchSalary && isSkillMatch && matchRatingValue && matchTemporary && matchRecurring && matchFlexible && matchShift;
   }).sort((a, b) => {
     const ratingA = a.rating || 0;
     const ratingB = b.rating || 0;
@@ -89,7 +106,7 @@ const Home = () => {
     return new Date(b.createdAt) - new Date(a.createdAt);
   });
 
-  const isSearching = searchQuery || filterLocation || minSalary || selectedCategory !== "Бүгд" || matchMySkills || minRating > 0 || onlyTemporary || onlyRecurring || onlyFlexible;
+  const isSearching = searchQuery || filterLocation || minSalary || selectedCategory !== "Бүгд" || matchMySkills || minRating > 0 || onlyTemporary || onlyRecurring || onlyFlexible || filterShift !== "Бүгд";
 
   return (
     <div className='min-h-screen bg-gray-50 dark:bg-[#0a0a0a] font-sans text-gray-900 dark:text-gray-100 flex flex-col transition-colors duration-300'>
@@ -167,62 +184,73 @@ const Home = () => {
           </div>
 
           {showAdvancedSearch && (
-            <div className="absolute top-full left-0 right-0 mt-4 p-5 bg-white dark:bg-[#1a1a1a] border border-gray-100 dark:border-gray-800 rounded-2xl shadow-2xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 animate-in slide-in-from-top-2 text-left z-50">
+            <div className="absolute top-full left-0 right-0 mt-4 p-6 bg-white dark:bg-[#1a1a1a] border border-gray-100 dark:border-gray-800 rounded-3xl shadow-2xl animate-in slide-in-from-top-2 text-left z-50">
               
-              <div className="xl:col-span-1">
-                <label className="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase mb-1.5">Ажиллах хэлбэр</label>
-                <select value={filterWorkType} onChange={(e) => setFilterWorkType(e.target.value)} className="w-full p-3 rounded-xl border border-gray-200 dark:border-gray-700 font-bold text-sm outline-none focus:border-blue-500 dark:focus:border-blue-500 bg-gray-50 dark:bg-[#222222] dark:text-white cursor-pointer">
-                  <option value="Бүгд">Бүгд</option>
-                  <option value="Зайнаас">Зайнаас</option>
-                  <option value="Оффис">Оффис</option>
-                  <option value="Холимог">Холимог</option>
-                </select>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5 mb-5">
+                <div>
+                  <label className="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase mb-1.5">Ажиллах хэлбэр</label>
+                  <select value={filterWorkType} onChange={(e) => setFilterWorkType(e.target.value)} className="w-full p-3 rounded-xl border border-gray-200 dark:border-gray-700 font-bold text-sm outline-none focus:border-blue-500 dark:focus:border-blue-500 bg-gray-50 dark:bg-[#222222] dark:text-white cursor-pointer">
+                    <option value="Бүгд">Бүгд</option>
+                    <option value="Зайнаас">Зайнаас</option>
+                    <option value="Оффис">Оффис</option>
+                    <option value="Холимог">Холимог</option>
+                  </select>
+                </div>
+
+                {/* 🔥 ШИНЭ: Ээлж сонгох хэсэг */}
+                <div>
+                  <label className="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase mb-1.5">Цагийн ээлж</label>
+                  <select value={filterShift} onChange={(e) => setFilterShift(e.target.value)} className="w-full p-3 rounded-xl border border-gray-200 dark:border-gray-700 font-bold text-sm outline-none focus:border-blue-500 dark:focus:border-blue-500 bg-gray-50 dark:bg-[#222222] dark:text-white cursor-pointer">
+                    <option value="Бүгд">Бүгд</option>
+                    <option value="Өглөөний ээлж">🌅 Өглөөний ээлж (06:00-14:00)</option>
+                    <option value="Өдрийн ээлж">☀️ Өдрийн ээлж (14:00-18:00)</option>
+                    <option value="Оройн ээлж">🌆 Оройн ээлж (18:00-06:00)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase mb-1.5">Байршил</label>
+                  <input type="text" value={filterLocation} onChange={(e) => setFilterLocation(e.target.value)} placeholder="Жнь: СБД" className="w-full p-3 rounded-xl border border-gray-200 dark:border-gray-700 font-bold text-sm outline-none focus:border-blue-500 dark:focus:border-blue-500 bg-gray-50 dark:bg-[#222222] dark:text-white" disabled={filterWorkType === 'Зайнаас'}/>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase mb-1.5">Доод цалин (₮)</label>
+                  <input type="number" value={minSalary} onChange={(e) => setMinSalary(e.target.value)} placeholder="Жнь: 50000" className="w-full p-3 rounded-xl border border-gray-200 dark:border-gray-700 font-bold text-sm outline-none focus:border-blue-500 dark:focus:border-blue-500 bg-gray-50 dark:bg-[#222222] dark:text-white"/>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase mb-1.5">Байгууллагын үнэлгээ</label>
+                  <select value={minRating} onChange={(e) => setMinRating(Number(e.target.value))} className="w-full p-3 rounded-xl border border-gray-200 dark:border-gray-700 font-bold text-sm outline-none focus:border-yellow-500 dark:focus:border-yellow-500 bg-gray-50 dark:bg-[#222222] dark:text-white cursor-pointer">
+                    <option value={0}>Бүгд</option>
+                    <option value={4}>4.0-өөс дээш</option>
+                    <option value={3}>3.0-аас дээш</option>
+                  </select>
+                </div>
               </div>
 
-              <div className="xl:col-span-1">
-                <label className="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase mb-1.5">Байршил</label>
-                <input type="text" value={filterLocation} onChange={(e) => setFilterLocation(e.target.value)} placeholder="Жнь: СБД" className="w-full p-3 rounded-xl border border-gray-200 dark:border-gray-700 font-bold text-sm outline-none focus:border-blue-500 dark:focus:border-blue-500 bg-gray-50 dark:bg-[#222222] dark:text-white" disabled={filterWorkType === 'Зайнаас'}/>
-              </div>
-
-              <div className="xl:col-span-1">
-                <label className="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase mb-1.5">Доод цалин (₮)</label>
-                <input type="number" value={minSalary} onChange={(e) => setMinSalary(e.target.value)} placeholder="Жнь: 50000" className="w-full p-3 rounded-xl border border-gray-200 dark:border-gray-700 font-bold text-sm outline-none focus:border-blue-500 dark:focus:border-blue-500 bg-gray-50 dark:bg-[#222222] dark:text-white"/>
-              </div>
-
-              <div className="xl:col-span-1">
-                <label className="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase mb-1.5">Байгууллагын үнэлгээ</label>
-                <select value={minRating} onChange={(e) => setMinRating(Number(e.target.value))} className="w-full p-3 rounded-xl border border-gray-200 dark:border-gray-700 font-bold text-sm outline-none focus:border-yellow-500 dark:focus:border-yellow-500 bg-gray-50 dark:bg-[#222222] dark:text-white cursor-pointer">
-                  <option value={0}>Бүгд</option>
-                  <option value={4}>4.0-өөс дээш</option>
-                  <option value={3}>3.0-аас дээш</option>
-                </select>
-              </div>
-
-              {/* 🔥 ШИНЭ: Төрлүүдээр шүүх 3 Checkbox */}
-              <div className="xl:col-span-2 flex flex-col justify-end gap-2 pt-2">
+              <div className="flex flex-wrap items-center gap-6 pt-4 border-t border-gray-100 dark:border-gray-800">
                 <label className="flex items-center gap-2 cursor-pointer group">
                   <div className="relative flex items-center">
-                    <input type="checkbox" checked={onlyTemporary} onChange={(e) => setOnlyTemporary(e.target.checked)} className="peer h-4 w-4 cursor-pointer appearance-none rounded border border-gray-300 dark:border-gray-600 checked:bg-orange-500 checked:border-orange-500 transition-all"/>
+                    <input type="checkbox" checked={onlyTemporary} onChange={(e) => setOnlyTemporary(e.target.checked)} className="peer h-5 w-5 cursor-pointer appearance-none rounded border border-gray-300 dark:border-gray-600 checked:bg-orange-500 checked:border-orange-500 transition-all"/>
                     <span className="absolute text-white opacity-0 peer-checked:opacity-100 pointer-events-none top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-bold text-[10px]">✓</span>
                   </div>
-                  <span className="text-xs font-bold text-gray-700 dark:text-gray-300 group-hover:text-orange-500 transition-colors">Түр зуурын ажил (1-3 өдөр)</span>
+                  <span className="text-sm font-bold text-gray-700 dark:text-gray-300 group-hover:text-orange-500 transition-colors">Түр зуурын ажил</span>
                 </label>
 
                 <label className="flex items-center gap-2 cursor-pointer group">
                   <div className="relative flex items-center">
-                    <input type="checkbox" checked={onlyRecurring} onChange={(e) => setOnlyRecurring(e.target.checked)} className="peer h-4 w-4 cursor-pointer appearance-none rounded border border-gray-300 dark:border-gray-600 checked:bg-teal-500 checked:border-teal-500 transition-all"/>
+                    <input type="checkbox" checked={onlyRecurring} onChange={(e) => setOnlyRecurring(e.target.checked)} className="peer h-5 w-5 cursor-pointer appearance-none rounded border border-gray-300 dark:border-gray-600 checked:bg-teal-500 checked:border-teal-500 transition-all"/>
                     <span className="absolute text-white opacity-0 peer-checked:opacity-100 pointer-events-none top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-bold text-[10px]">✓</span>
                   </div>
-                  <span className="text-xs font-bold text-gray-700 dark:text-gray-300 group-hover:text-teal-500 transition-colors">Тогтмол давтамжтай (Гарагаар)</span>
+                  <span className="text-sm font-bold text-gray-700 dark:text-gray-300 group-hover:text-teal-500 transition-colors">Тогтмол давтамжтай</span>
                 </label>
 
-                {/* ✨ ШИНЭ: Уян хатан цагийн шүүлтүүр */}
                 <label className="flex items-center gap-2 cursor-pointer group">
                   <div className="relative flex items-center">
-                    <input type="checkbox" checked={onlyFlexible} onChange={(e) => setOnlyFlexible(e.target.checked)} className="peer h-4 w-4 cursor-pointer appearance-none rounded border border-gray-300 dark:border-gray-600 checked:bg-blue-500 checked:border-blue-500 transition-all"/>
+                    <input type="checkbox" checked={onlyFlexible} onChange={(e) => setOnlyFlexible(e.target.checked)} className="peer h-5 w-5 cursor-pointer appearance-none rounded border border-gray-300 dark:border-gray-600 checked:bg-blue-500 checked:border-blue-500 transition-all"/>
                     <span className="absolute text-white opacity-0 peer-checked:opacity-100 pointer-events-none top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-bold text-[10px]">✓</span>
                   </div>
-                  <span className="text-xs font-bold text-gray-700 dark:text-gray-300 group-hover:text-blue-500 transition-colors">Уян хатан цагийн хуваарьтай</span>
+                  <span className="text-sm font-bold text-gray-700 dark:text-gray-300 group-hover:text-blue-500 transition-colors">Уян хатан цагтай</span>
                 </label>
               </div>
 
@@ -252,6 +280,8 @@ const Home = () => {
                   {onlyTemporary && <span className="bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-400 text-[10px] px-2 py-0.5 rounded-full font-bold">Түр зуурын</span>}
                   {onlyRecurring && <span className="bg-teal-100 dark:bg-teal-900/30 text-teal-800 dark:text-teal-400 text-[10px] px-2 py-0.5 rounded-full font-bold">Давтамжтай</span>}
                   {onlyFlexible && <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400 text-[10px] px-2 py-0.5 rounded-full font-bold">Уян хатан цагтай</span>}
+                  {/* 🔥 ШИНЭЧЛЭЛТ: Ээлжийн Badge */}
+                  {filterShift !== "Бүгд" && <span className="bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-400 text-[10px] px-2 py-0.5 rounded-full font-bold">{filterShift}</span>}
                 </p>
               </>
             ) : (
@@ -301,7 +331,7 @@ const Home = () => {
             {matchMySkills && (!user.professions || user.professions.length === 0) ? (
               <p className="text-gray-500 dark:text-gray-400 mb-4 text-sm">Та профайл дээрээ мэргэжлээ оруулаагүй байна.</p>
             ) : null}
-            <button onClick={() => { setSearchQuery(""); setSelectedCategory("Бүгд"); setFilterWorkType("Бүгд"); setFilterLocation(""); setMinSalary(""); setMatchMySkills(false); setMinRating(0); setOnlyTemporary(false); setOnlyRecurring(false); setOnlyFlexible(false); }} className="mt-4 text-blue-600 dark:text-blue-400 text-sm font-bold hover:underline">Шүүлтүүр цэвэрлэх</button>
+            <button onClick={() => { setSearchQuery(""); setSelectedCategory("Бүгд"); setFilterWorkType("Бүгд"); setFilterLocation(""); setMinSalary(""); setMatchMySkills(false); setMinRating(0); setOnlyTemporary(false); setOnlyRecurring(false); setOnlyFlexible(false); setFilterShift("Бүгд"); }} className="mt-4 text-blue-600 dark:text-blue-400 text-sm font-bold hover:underline">Шүүлтүүр цэвэрлэх</button>
           </div>
         ) : (
           <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'>

@@ -12,12 +12,10 @@ const JobDetails = () => {
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
   
-  // Үнэлгээний State
   const [reviews, setReviews] = useState([]);
   const [averageRating, setAverageRating] = useState(0);
   const [totalReviews, setTotalReviews] = useState(0);
 
-  // Компанийн профайл модал харуулах State
   const [selectedEmployer, setSelectedEmployer] = useState(null);
   const [loadingEmployer, setLoadingEmployer] = useState(false);
 
@@ -27,11 +25,9 @@ const JobDetails = () => {
 
   const fetchJobAndReviews = async () => {
     try {
-      // 1. Ажлын мэдээллийг татах
       const jobRes = await axios.get(`http://localhost:5000/api/jobs/${id}`);
       setJob(jobRes.data);
 
-      // 2. Тухайн ажил олгогчид ирсэн үнэлгээнүүдийг татах
       const reviewRes = await axios.get(`http://localhost:5000/api/reviews/${jobRes.data.employerId}`);
       setReviews(reviewRes.data.reviews);
       setAverageRating(reviewRes.data.averageRating);
@@ -44,11 +40,9 @@ const JobDetails = () => {
     }
   };
 
-  // Ажил олгогчийн профайлыг татаж модал дээр харуулах функц
   const handleViewEmployerProfile = async () => {
     setLoadingEmployer(true);
     try {
-      // Хэрэглэгчдийн жагсаалтаас тухайн ажил олгогчийн ID-аар олж авах
       const res = await axios.get('http://localhost:5000/api/auth/users');
       const employerData = res.data.find(u => u._id === job.employerId);
       
@@ -72,7 +66,7 @@ const JobDetails = () => {
         text: 'Та эхлээд нэвтэрсэн байх шаардлагатай.',
         icon: 'warning',
         confirmButtonText: 'Ойлголоо',
-        confirmButtonColor: '#3b82f6' // Цэнхэр өнгө
+        confirmButtonColor: '#3b82f6' 
       });
       navigate('/login');
       return;
@@ -84,7 +78,7 @@ const JobDetails = () => {
         text: 'Ажил олгогч ажилд орох хүсэлт илгээх боломжгүй.',
         icon: 'error',
         confirmButtonText: 'Хаах',
-        confirmButtonColor: '#ef4444' // Улаан өнгө
+        confirmButtonColor: '#ef4444' 
       });
       return;
     }
@@ -104,13 +98,12 @@ const JobDetails = () => {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       
-      // 🔥 АМЖИЛТТАЙ БОЛСОН ГОЁ POP-UP
       Swal.fire({
         title: 'Амжилттай!',
         text: 'Ажилд орох хүсэлт амжилттай илгээгдлээ!',
         icon: 'success',
         confirmButtonText: 'Гайхалтай',
-        confirmButtonColor: '#10b981' // Ногоон өнгө
+        confirmButtonColor: '#10b981' 
       }).then(() => {
         navigate('/my-applications');
       });
@@ -145,7 +138,6 @@ const JobDetails = () => {
             <div>
               <h1 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-4 transition-colors">{job.title}</h1>
               
-              {/* 🔥 Түр зуурын болон Давтамжтай ажлын Badge-ууд */}
               <div className="flex flex-wrap gap-3 mb-6">
                 {job.isTemporary && (
                   <div className="inline-flex items-center gap-2 bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 px-3.5 py-1.5 rounded-lg text-sm font-bold border border-orange-200/50 dark:border-orange-800/50">
@@ -162,8 +154,6 @@ const JobDetails = () => {
               </div>
 
               <div className="flex flex-wrap items-center gap-4">
-                
-                {/* Байгууллагын нэрэн дээр дарахад профайл харагдана */}
                 <button 
                   onClick={handleViewEmployerProfile} 
                   disabled={loadingEmployer}
@@ -187,7 +177,8 @@ const JobDetails = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 border-t border-gray-50 dark:border-gray-800 pt-6 transition-colors">
+          {/* 🔥 ШИНЭЧЛЭЛТ: 4 баганыг 5 болгосон бөгөөд Авах хүний тоо нэмсэн */}
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6 border-t border-gray-50 dark:border-gray-800 pt-6 transition-colors">
             <div>
               <div className="text-gray-400 dark:text-gray-500 text-xs font-bold uppercase mb-1">Төрөл</div>
               <div className="font-bold text-gray-900 dark:text-gray-300">{job.category}</div>
@@ -200,11 +191,18 @@ const JobDetails = () => {
               <div className="text-gray-400 dark:text-gray-500 text-xs font-bold uppercase mb-1">Огноо</div>
               <div className="font-bold text-gray-900 dark:text-gray-300">{new Date(job.createdAt).toLocaleDateString()}</div>
             </div>
+            {/* 🔥 ШИНЭ ХЭСЭГ */}
+            <div className="md:col-span-2">
+              <div className="text-gray-400 dark:text-gray-500 text-xs font-bold uppercase mb-1">Авах хүний тоо</div>
+              <div className="font-black text-blue-600 dark:text-blue-400 flex items-center gap-1.5">
+                👥 {job.workersNeeded || 1} хүн
+              </div>
+            </div>
           </div>
 
           {job.locationType !== 'Зайнаас' && job.location && (
             <div className="mb-10 bg-indigo-50/40 dark:bg-indigo-900/10 p-5 rounded-2xl border border-indigo-100 dark:border-indigo-900/30 flex items-start gap-4 transition-colors">
-              <div className="text-2xl mt-1"></div>
+              <div className="text-2xl mt-1">📍</div>
               <div>
                 <div className="text-indigo-900/60 dark:text-indigo-400/60 text-[11px] font-black uppercase tracking-widest mb-1.5 transition-colors">Байршил / Дэлгэрэнгүй хаяг</div>
                 <div className="font-bold text-indigo-900 dark:text-indigo-300 text-sm leading-relaxed transition-colors">{job.location}</div>
@@ -267,20 +265,20 @@ const JobDetails = () => {
           )}
         </div>
 
- 
       </div>
+      
       {/* Цагийн хуваарийн гоё баннер */}
-{job.workingHours && (
-  <div className="mb-6 flex items-center gap-4 bg-blue-50 dark:bg-blue-900/10 p-5 rounded-2xl border border-blue-100 dark:border-blue-900/30 transition-colors">
-    <div className="w-12 h-12 flex items-center justify-center bg-white dark:bg-[#1a1a1a] rounded-xl shadow-sm text-2xl">
-      🕒
-    </div>
-    <div>
-      <div className="text-blue-800/60 dark:text-blue-400/60 text-[11px] font-black uppercase tracking-widest mb-1">Ажиллах цагийн хуваарь</div>
-      <div className="font-black text-lg text-blue-900 dark:text-blue-300">{job.workingHours}</div>
-    </div>
-  </div>
-)}
+      {job.workingHours && (
+        <div className="mb-6 flex items-center gap-4 bg-blue-50 dark:bg-blue-900/10 p-5 rounded-2xl border border-blue-100 dark:border-blue-900/30 transition-colors">
+          <div className="w-12 h-12 flex items-center justify-center bg-white dark:bg-[#1a1a1a] rounded-xl shadow-sm text-2xl">
+            🕒
+          </div>
+          <div>
+            <div className="text-blue-800/60 dark:text-blue-400/60 text-[11px] font-black uppercase tracking-widest mb-1">Ажиллах цагийн хуваарь</div>
+            <div className="font-black text-lg text-blue-900 dark:text-blue-300">{job.workingHours}</div>
+          </div>
+        </div>
+      )}
 
       {/* КОМПАНИЙН ПРОФАЙЛ ХАРАХ МОДАЛ */}
       {selectedEmployer && (

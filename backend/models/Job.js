@@ -23,6 +23,7 @@ const jobSchema = new mongoose.Schema({
 
   // Цагийн хуваарь
   workingHours: { type: String, default: '' },
+  workersNeeded: { type: Number, default: 1, required: true }, // 🔥 ШИНЭ: Авах хүний тоо
 
   requirements: { type: String, required: false },
   rating: { type: Number, default: 0 },
